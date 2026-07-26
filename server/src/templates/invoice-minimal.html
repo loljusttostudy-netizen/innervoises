@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Invoice</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: Courier, monospace; color: #000; }
+        body { padding: 20px; font-size: 10px; line-height: 1.3; }
+        .header { text-align: center; margin-bottom: 15px; border-bottom: 1px dashed #000; padding-bottom: 10px; }
+        .header h1 { font-size: 16px; text-transform: uppercase; }
+        .flex-between { display: flex; justify-content: space-between; }
+        .box { border: 1px solid #000; padding: 8px; margin-bottom: 10px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+        th, td { border: 1px solid #000; padding: 5px; text-align: left; }
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+        .totals { width: 50%; margin-left: auto; border: 1px solid #000; padding: 6px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>{{companyName}}</h1>
+        <p>{{address}}, {{city}}, {{state}} - {{pincode}}</p>
+        <p>GSTIN: {{gstin}} | Phone: {{phone}}</p>
+        <h2>TAX INVOICE</h2>
+    </div>
+
+    <div class="box flex-between">
+        <div>
+            <p><strong>INVOICE NO:</strong> {{invoiceNo}}</p>
+            <p><strong>DATE:</strong> {{date}}</p>
+            <p><strong>PLACE OF SUPPLY:</strong> {{placeOfSupply}}</p>
+        </div>
+        <div>
+            <p><strong>TRANSPORT:</strong> {{transportName}}</p>
+            <p><strong>E-WAY BILL:</strong> {{eWayBillNo}}</p>
+            <p><strong>CASES:</strong> {{noOfCases}}</p>
+        </div>
+    </div>
+
+    <div class="box">
+        <p><strong>CUSTOMER / BUYER:</strong> {{party.name}}</p>
+        <p><strong>GSTIN:</strong> {{party.gstin}}</p>
+        <p><strong>ADDRESS:</strong> {{party.billingAddress}}</p>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th class="text-center">#</th>
+                <th>ITEM DESCRIPTION</th>
+                <th class="text-center">HSN</th>
+                <th class="text-right">QTY</th>
+                <th class="text-center">UNIT</th>
+                <th class="text-right">RATE</th>
+                <th class="text-center">GST%</th>
+                <th class="text-right">AMOUNT</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{#each items}}
+            <tr>
+                <td class="text-center">{{addOne @index}}</td>
+                <td>{{name}}</td>
+                <td class="text-center">{{hsn}}</td>
+                <td class="text-right">{{qtyFormatted}}</td>
+                <td class="text-center">{{unit}}</td>
+                <td class="text-right">{{rateFormatted}}</td>
+                <td class="text-center">{{gst}}%</td>
+                <td class="text-right">{{amountFormatted}}</td>
+            </tr>
+            {{/each}}
+        </tbody>
+    </table>
+
+    <div class="totals">
+        <div class="flex-between"><span>SUBTOTAL:</span><span>₹{{subtotalFormatted}}</span></div>
+        {{#if isIntraState}}
+            <div class="flex-between"><span>CGST:</span><span>₹{{cgstFormatted}}</span></div>
+            <div class="flex-between"><span>SGST:</span><span>₹{{sgstFormatted}}</span></div>
+        {{else}}
+            <div class="flex-between"><span>IGST:</span><span>₹{{igstFormatted}}</span></div>
+        {{/if}}
+        <div class="flex-between"><span>ROUND OFF:</span><span>₹{{roundOffFormatted}}</span></div>
+        <div class="flex-between" style="border-top:1px solid #000; font-weight:bold; margin-top:4px; padding-top:4px;">
+            <span>TOTAL:</span><span>₹{{totalFormatted}}</span>
+        </div>
+    </div>
+
+    <p style="margin-top:10px;"><strong>Amount in words:</strong> {{totalInWords}}</p>
+
+    <div class="flex-between" style="margin-top:30px;">
+        <div>
+            <p><strong>Bank Details:</strong></p>
+            <p>Bank: {{bankName}}</p>
+            <p>A/c: {{bankAccountNo}} | IFSC: {{bankIfsc}}</p>
+        </div>
+        <div style="text-align:right;">
+            <p>For {{companyName}}</p>
+            <br/><br/>
+            <p>(Authorized Signatory)</p>
+        </div>
+    </div>
+
+    <p style="text-align:center; margin-top:20px; font-size:8px;">{{footerText}}</p>
+</body>
+</html>

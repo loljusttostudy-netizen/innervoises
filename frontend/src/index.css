@@ -1,0 +1,90 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    background-color: #CCCFFA;
+    color: #2d241b;
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+    min-height: 100vh;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Poppins', sans-serif;
+    color: #2d241b;
+  }
+}
+
+/* Official Astryx Y2K Theme Classes */
+.y2k-panel {
+  background-color: #FFFFFF;
+  border: 2px solid #2F292E;
+  box-shadow: 4px 4px 0px #2F292E;
+}
+
+.y2k-button-primary {
+  background-color: #2d241b;
+  color: #CCCFFA;
+  border: 2px solid #2F292E;
+  box-shadow: 2px 2px 0px #2F292E;
+  font-weight: 600;
+  transition: all 0.1s ease;
+}
+
+.y2k-button-primary:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0px #2F292E;
+}
+
+.y2k-button-secondary {
+  background-color: #C5E17A;
+  color: #3a5500;
+  border: 2px solid #3a5500;
+  box-shadow: 2px 2px 0px #2F292E;
+  font-weight: 600;
+  transition: all 0.1s ease;
+}
+
+.y2k-button-secondary:hover {
+  background-color: #b5d16a;
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0px #2F292E;
+}
+
+.y2k-button-danger {
+  background-color: #FFC5C3;
+  color: #8b1d24;
+  border: 2px solid #8b1d24;
+  box-shadow: 2px 2px 0px #2F292E;
+  font-weight: 600;
+  transition: all 0.1s ease;
+}
+
+.y2k-input {
+  background-color: #FFFFFF;
+  border: 2px solid #2F292E;
+  color: #2d241b;
+  box-shadow: 2px 2px 0px #2F292E;
+  outline: none;
+}
+
+.y2k-input:focus {
+  border-color: #2d241b;
+  box-shadow: 3px 3px 0px #2F292E;
+}
+
+/* Custom scrollbar with Y2K solid styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #CCCFFA;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2F292E;
+  border: 1px solid #2F292E;
+}
