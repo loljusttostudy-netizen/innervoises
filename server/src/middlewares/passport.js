@@ -3,10 +3,9 @@ import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import { User } from "../models/user.models.js";
 import dotenv from "dotenv";
 
+dotenv.config();
+
 export default function configurePassport() {
-  if (!process.env.CLIENT_ID && !process.env.GOOGLE_CLIENT_ID) {
-    dotenv.config();
-  }
   const clientID = process.env.CLIENT_ID || process.env.GOOGLE_CLIENT_ID;
   const clientSecret = process.env.CLIENT_SECRET || process.env.GOOGLE_CLIENT_SECRET;
   const callbackURL = process.env.CALLBACK_URL || "http://localhost:5001/api/auth/google/callback";

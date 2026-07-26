@@ -5,9 +5,9 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { uploadToCloudinary, deleteFromCloudinary } from "../utils/cloudinary.js";
 
 const getProfile = asyncHandler(async (req, res) => {
-    let profile = await BusinessProfile.findOne();
+    let profile = await BusinessProfile.findOne({ $or: [{ user: req.user._id }, { updatedBy: req.user._id }] });
     if (!profile) {
-        profile = await BusinessProfile.create({ updatedBy: req.user._id });
+        profile = await BusinessProfile.create({ user: req.user._id, updatedBy: req.user._id });
     }
     return res.status(200).json(
         new ApiResponse(200, profile, "Business profile retrieved successfully")
@@ -16,9 +16,10 @@ const getProfile = asyncHandler(async (req, res) => {
 
 const updateProfile = asyncHandler(async (req, res) => {
     const updateData = req.body;
+    updateData.user = req.user._id;
     updateData.updatedBy = req.user._id;
 
-    let profile = await BusinessProfile.findOne();
+    let profile = await BusinessProfile.findOne({ $or: [{ user: req.user._id }, { updatedBy: req.user._id }] });
     if (!profile) {
         profile = await BusinessProfile.create(updateData);
     } else {
@@ -35,9 +36,9 @@ const uploadImageField = (fieldName, urlKey, publicIdKey) => asyncHandler(async 
         throw new ApiError(400, `No ${fieldName} image provided`);
     }
 
-    let profile = await BusinessProfile.findOne();
+    let profile = await BusinessProfile.findOne({ $or: [{ user: req.user._id }, { updatedBy: req.user._id }] });
     if (!profile) {
-        profile = await BusinessProfile.create({ updatedBy: req.user._id });
+        profile = await BusinessProfile.create({ user: req.user._id, updatedBy: req.user._id });
     }
 
     // Delete existing if present
@@ -52,6 +53,7 @@ const uploadImageField = (fieldName, urlKey, publicIdKey) => asyncHandler(async 
 
     profile[urlKey] = cloudinaryResult.secure_url;
     profile[publicIdKey] = cloudinaryResult.public_id;
+    profile.user = req.user._id;
     profile.updatedBy = req.user._id;
     await profile.save();
 
@@ -61,7 +63,7 @@ const uploadImageField = (fieldName, urlKey, publicIdKey) => asyncHandler(async 
 });
 
 const deleteImageField = (fieldName, urlKey, publicIdKey) => asyncHandler(async (req, res) => {
-    let profile = await BusinessProfile.findOne();
+    let profile = await BusinessProfile.findOne({ $or: [{ user: req.user._id }, { updatedBy: req.user._id }] });
     if (!profile) {
         throw new ApiError(404, "Business profile not found");
     }

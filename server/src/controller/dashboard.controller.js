@@ -5,11 +5,11 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 
 const getDashboardStats = asyncHandler(async (req, res) => {
-    const invoices = await Invoice.find({ status: { $ne: "cancelled" } })
+    const invoices = await Invoice.find({ createdBy: req.user._id, status: { $ne: "cancelled" } })
         .populate("party", "name gstin")
         .sort({ createdAt: -1 });
-    const payments = await Payment.find().populate("party", "name");
-    const parties = await Party.find();
+    const payments = await Payment.find({ createdBy: req.user._id }).populate("party", "name");
+    const parties = await Party.find({ createdBy: req.user._id });
 
     let totalBilled = 0;
     let totalCreditBilled = 0;

@@ -22,7 +22,7 @@ const createFactory = asyncHandler(async (req, res) => {
 });
 
 const getFactories = asyncHandler(async (req, res) => {
-    const factories = await Factory.find().sort({ createdAt: -1 });
+    const factories = await Factory.find({ createdBy: req.user._id }).sort({ createdAt: -1 });
 
     return res.status(200).json(
         new ApiResponse(200, factories, "Factories retrieved successfully")
@@ -33,8 +33,8 @@ const updateFactory = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const { name, state, address } = req.body;
 
-    const factory = await Factory.findByIdAndUpdate(
-        id,
+    const factory = await Factory.findOneAndUpdate(
+        { _id: id, createdBy: req.user._id },
         { name, state, address },
         { new: true, runValidators: true }
     );
@@ -50,7 +50,7 @@ const updateFactory = asyncHandler(async (req, res) => {
 
 const deleteFactory = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const factory = await Factory.findByIdAndDelete(id);
+    const factory = await Factory.findOneAndDelete({ _id: id, createdBy: req.user._id });
 
     if (!factory) {
         throw new ApiError(404, "Factory not found");

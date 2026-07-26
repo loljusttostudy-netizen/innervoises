@@ -45,7 +45,7 @@ const recordPayment = asyncHandler(async (req, res) => {
 
 const getPayments = asyncHandler(async (req, res) => {
     const { partyId, invoiceId } = req.query;
-    let filter = {};
+    let filter = { createdBy: req.user._id };
 
     if (partyId) filter.party = partyId;
     if (invoiceId) filter.invoice = invoiceId;
@@ -62,7 +62,7 @@ const getPayments = asyncHandler(async (req, res) => {
 
 const deletePayment = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const payment = await Payment.findByIdAndDelete(id);
+    const payment = await Payment.findOneAndDelete({ _id: id, createdBy: req.user._id });
 
     if (!payment) {
         throw new ApiError(404, "Payment not found");

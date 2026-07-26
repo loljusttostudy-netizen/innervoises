@@ -40,7 +40,8 @@ router.get(
                 secure: process.env.NODE_ENV === "production"
             };
 
-            const frontendUrl = process.env.CORS || "http://localhost:5173";
+            const rawFrontendUrl = process.env.CLIENT_URL || process.env.FRONTEND_URL || process.env.CORS || "http://localhost:5173";
+            const frontendUrl = rawFrontendUrl.replace(/\/+$/, "");
 
             return res
                 .status(200)
@@ -49,7 +50,8 @@ router.get(
                 .redirect(`${frontendUrl}/?token=${accessToken}`);
         } catch (error) {
             console.error("Google Auth Callback Error:", error);
-            const frontendUrl = process.env.CORS || "http://localhost:5173";
+            const rawFrontendUrl = process.env.CLIENT_URL || process.env.FRONTEND_URL || process.env.CORS || "http://localhost:5173";
+            const frontendUrl = rawFrontendUrl.replace(/\/+$/, "");
             return res.redirect(`${frontendUrl}/login?error=OAuthFailed`);
         }
     }

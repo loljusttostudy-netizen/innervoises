@@ -22,13 +22,13 @@ const createParty = asyncHandler(async (req, res) => {
 });
 
 const getParties = asyncHandler(async (req, res) => {
-    const parties = await Party.find().sort({ name: 1 });
+    const parties = await Party.find({ createdBy: req.user._id }).sort({ name: 1 });
 
     // Attach computed balance for each party
     const partiesWithBalance = await Promise.all(
         parties.map(async (party) => {
-            const invoices = await Invoice.find({ party: party._id, status: { $ne: "cancelled" } });
-            const payments = await Payment.find({ party: party._id });
+            const invoices = await Invoice.find({ party: party._id, createdBy: req.user._id, status: { $ne: "cancelled" } });
+            const payments = await Payment.find({ party: party._id, createdBy: req.user._id });
 
             let balance = 0;
             invoices.forEach((inv) => {
@@ -58,11 +58,12 @@ const searchParties = asyncHandler(async (req, res) => {
     const query = q.trim();
 
     if (!query) {
-        const topParties = await Party.find().limit(10).select("name gstin state billingAddress shippingAddress");
+        const topParties = await Party.find({ createdBy: req.user._id }).limit(10).select("name gstin state billingAddress shippingAddress");
         return res.status(200).json(new ApiResponse(200, topParties, "Top parties"));
     }
 
     const parties = await Party.find({
+        createdBy: req.user._id,
         $or: [
             { name: { $regex: query, $options: "i" } },
             { gstin: { $regex: query, $options: "i" } }
@@ -76,14 +77,14 @@ const searchParties = asyncHandler(async (req, res) => {
 
 const getPartyById = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const party = await Party.findById(id);
+    const party = await Party.findOne({ _id: id, createdBy: req.user._id });
 
     if (!party) {
         throw new ApiError(404, "Party not found");
     }
 
-    const invoices = await Invoice.find({ party: party._id }).sort({ createdAt: -1 });
-    const payments = await Payment.find({ party: party._id }).sort({ createdAt: -1 });
+    const invoices = await Invoice.find({ party: party._id, createdBy: req.user._id }).sort({ createdAt: -1 });
+    const payments = await Payment.find({ party: party._id, createdBy: req.user._id }).sort({ createdAt: -1 });
 
     // Compute ledger entries
     let ledger = [];
@@ -142,8 +143,8 @@ const getPartyById = asyncHandler(async (req, res) => {
 
 const updateParty = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const party = await Party.findByIdAndUpdate(
-        id,
+    const party = await Party.findOneAndUpdate(
+        { _id: id, createdBy: req.user._id },
         req.body,
         { new: true, runValidators: true }
     );
@@ -159,7 +160,7 @@ const updateParty = asyncHandler(async (req, res) => {
 
 const deleteParty = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const party = await Party.findByIdAndDelete(id);
+    const party = await Party.findOneAndDelete({ _id: id, createdBy: req.user._id });
 
     if (!party) {
         throw new ApiError(404, "Party not found");

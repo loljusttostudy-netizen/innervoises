@@ -148,6 +148,11 @@ const businessProfileSchema = new Schema({
         min: 0,
         max: 6
     },
+    user: {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        index: true
+    },
     updatedBy: {
         type: Schema.Types.ObjectId,
         ref: "User"

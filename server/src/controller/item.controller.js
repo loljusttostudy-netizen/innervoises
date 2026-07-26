@@ -32,7 +32,7 @@ const createItem = asyncHandler(async (req, res) => {
 });
 
 const getItems = asyncHandler(async (req, res) => {
-    const items = await Item.find().sort({ name: 1 });
+    const items = await Item.find({ createdBy: req.user._id }).sort({ name: 1 });
 
     return res.status(200).json(
         new ApiResponse(200, items, "Items retrieved successfully")
@@ -44,11 +44,12 @@ const searchItems = asyncHandler(async (req, res) => {
     const query = q.trim();
 
     if (!query) {
-        const topItems = await Item.find().limit(10);
+        const topItems = await Item.find({ createdBy: req.user._id }).limit(10);
         return res.status(200).json(new ApiResponse(200, topItems, "Top items"));
     }
 
     const items = await Item.find({
+        createdBy: req.user._id,
         $or: [
             { name: { $regex: query, $options: "i" } },
             { category: { $regex: query, $options: "i" } },
@@ -62,10 +63,11 @@ const searchItems = asyncHandler(async (req, res) => {
 });
 
 const getDistinctUnits = asyncHandler(async (req, res) => {
-    const dbUnits = await Item.distinct("unit");
+    const dbUnits = await Item.distinct("unit", { createdBy: req.user._id });
 
     // Extract units from past invoices as well
     const invoices = await Invoice.aggregate([
+        { $match: { createdBy: req.user._id } },
         { $unwind: "$items" },
         { $group: { _id: "$items.unit" } }
     ]);
@@ -83,8 +85,8 @@ const updateItem = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const { name, category, hsn, unit, rate, gst, rateDecimalPlaces } = req.body;
 
-    const item = await Item.findByIdAndUpdate(
-        id,
+    const item = await Item.findOneAndUpdate(
+        { _id: id, createdBy: req.user._id },
         {
             name,
             category,
@@ -108,7 +110,7 @@ const updateItem = asyncHandler(async (req, res) => {
 
 const deleteItem = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const item = await Item.findByIdAndDelete(id);
+    const item = await Item.findOneAndDelete({ _id: id, createdBy: req.user._id });
 
     if (!item) {
         throw new ApiError(404, "Item not found");

@@ -25,7 +25,7 @@ function parseInvoiceNo(invoiceNo) {
 const getNextNumber = asyncHandler(async (req, res) => {
     const { prefix = "SH/26-27/" } = req.query;
 
-    const counter = await Counter.findOne({ prefix });
+    const counter = await Counter.findOne({ prefix, createdBy: req.user._id });
     if (counter) {
         return res.status(200).json(
             new ApiResponse(200, {
@@ -36,7 +36,7 @@ const getNextNumber = asyncHandler(async (req, res) => {
         );
     } else {
         // Try finding highest existing invoice with this prefix
-        const invoices = await Invoice.find({ invoiceNo: { $regex: `^${prefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}` } });
+        const invoices = await Invoice.find({ createdBy: req.user._id, invoiceNo: { $regex: `^${prefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}` } });
         let maxNum = 0;
         invoices.forEach(inv => {
             const parsed = parseInvoiceNo(inv.invoiceNo);
@@ -72,7 +72,7 @@ const checkRateAnomaly = asyncHandler(async (req, res) => {
 
     // Aggregate past invoices for this item + party
     const stats = await Invoice.aggregate([
-        { $match: { party: new mongoose.Types.ObjectId(partyId), status: { $ne: "cancelled" } } },
+        { $match: { party: new mongoose.Types.ObjectId(partyId), createdBy: req.user._id, status: { $ne: "cancelled" } } },
         { $unwind: "$items" },
         { $match: { "items.item": new mongoose.Types.ObjectId(itemId) } },
         {
@@ -120,17 +120,17 @@ const createInvoice = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Missing required fields: invoiceNo, date, factory, party, items");
     }
 
-    const factory = await Factory.findById(factoryId);
+    const factory = await Factory.findOne({ _id: factoryId, createdBy: req.user._id });
     if (!factory) throw new ApiError(404, "Factory not found");
 
-    const party = await Party.findById(partyId);
+    const party = await Party.findOne({ _id: partyId, createdBy: req.user._id });
     if (!party) throw new ApiError(404, "Party not found");
 
     const pos = placeOfSupply || party.state;
     const isIntraState = factory.state.trim().toLowerCase() === pos.trim().toLowerCase();
 
     // Fetch business profile for default decimal precision if needed
-    const profile = await BusinessProfile.findOne();
+    const profile = await BusinessProfile.findOne({ $or: [{ user: req.user._id }, { updatedBy: req.user._id }] });
     const globalRateDecimals = profile?.rateDecimalPlaces ?? 2;
 
     // Calculate line amounts and taxes
@@ -216,8 +216,8 @@ const createInvoice = asyncHandler(async (req, res) => {
     const parsed = parseInvoiceNo(invoiceNo);
     if (parsed.prefix) {
         await Counter.findOneAndUpdate(
-            { prefix: parsed.prefix },
-            { $set: { currentNumber: parsed.num } },
+            { prefix: parsed.prefix, createdBy: req.user._id },
+            { $set: { currentNumber: parsed.num, createdBy: req.user._id } },
             { upsert: true, new: true }
         );
     }
@@ -229,7 +229,7 @@ const createInvoice = asyncHandler(async (req, res) => {
 
 const getInvoices = asyncHandler(async (req, res) => {
     const { factoryId, partyId, status, saleType } = req.query;
-    let filter = {};
+    let filter = { createdBy: req.user._id };
 
     if (factoryId) filter.factory = factoryId;
     if (partyId) filter.party = partyId;
@@ -248,7 +248,7 @@ const getInvoices = asyncHandler(async (req, res) => {
 
 const getInvoiceById = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const invoice = await Invoice.findById(id)
+    const invoice = await Invoice.findOne({ _id: id, createdBy: req.user._id })
         .populate("factory")
         .populate("party");
 
@@ -264,15 +264,15 @@ const getInvoiceById = asyncHandler(async (req, res) => {
 const updateInvoice = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
-    const invoice = await Invoice.findById(id);
+    const invoice = await Invoice.findOne({ _id: id, createdBy: req.user._id });
     if (!invoice) throw new ApiError(404, "Invoice not found");
 
     if (invoice.status === "cancelled") {
         throw new ApiError(400, "Cannot update a cancelled invoice");
     }
 
-    const updated = await Invoice.findByIdAndUpdate(
-        id,
+    const updated = await Invoice.findOneAndUpdate(
+        { _id: id, createdBy: req.user._id },
         req.body,
         { new: true, runValidators: true }
     );
@@ -284,11 +284,11 @@ const updateInvoice = asyncHandler(async (req, res) => {
 
 const generatePdf = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const invoice = await Invoice.findById(id).populate("factory").populate("party");
+    const invoice = await Invoice.findOne({ _id: id, createdBy: req.user._id }).populate("factory").populate("party");
 
     if (!invoice) throw new ApiError(404, "Invoice not found");
 
-    const profile = await BusinessProfile.findOne();
+    const profile = await BusinessProfile.findOne({ $or: [{ user: req.user._id }, { updatedBy: req.user._id }] });
 
     const pdfBuffer = await generateInvoicePdf(invoice, profile);
 

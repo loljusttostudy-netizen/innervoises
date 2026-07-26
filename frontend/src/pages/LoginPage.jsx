@@ -39,7 +39,8 @@ export function LoginPage() {
   };
 
   const handleGoogleSignIn = () => {
-    window.location.href = 'http://localhost:5001/api/auth/google';
+    const backendUrl = (import.meta.env.VITE_BACKEND_URL || 'http://localhost:5001/api').replace(/\/+$/, '');
+    window.location.href = `${backendUrl}/auth/google`;
   };
 
   return (
