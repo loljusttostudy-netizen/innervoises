@@ -55,6 +55,7 @@ app.use('/api/invoices', invoiceRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/health', healthRoutes);
+app.use('/api/health', healthRoutes);
 
 // Global Error Handler
 app.use(errorHandler);

@@ -1,10 +1,18 @@
 import { Router } from "express";
-import { ApiResponse } from "../utils/ApiResponse.js";
+import mongoose from "mongoose";
 
 const router = Router();
 
 router.get("/", (req, res) => {
-    return res.status(200).json(new ApiResponse(200, { status: "OK", timestamp: new Date() }, "Server is healthy"));
+    const dbState = mongoose.connection.readyState;
+    const isDbConnected = dbState === 1;
+
+    return res.status(200).json({
+        status: "OK",
+        uptime: `${Math.floor(process.uptime())}s`,
+        database: isDbConnected ? "connected" : "connecting/disconnected",
+        timestamp: new Date().toISOString()
+    });
 });
 
 export default router;
