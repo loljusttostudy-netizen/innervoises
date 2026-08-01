@@ -8,26 +8,26 @@ export default {
     extend: {
       colors: {
         y2k: {
-          bg: '#CCCFFA',
-          surface: '#FFFFFF',
-          text: '#2d241b',
-          muted: '#675d52',
-          border: '#2F292E',
-          accent: '#2d241b',
-          green: '#C5E17A',
-          greenDark: '#3a5500',
-          red: '#FFC5C3',
-          redDark: '#8b1d24',
-          yellow: '#FFE08A',
-          yellowDark: '#614400',
-          blue: '#B8E0FF',
-          blueDark: '#004e74',
-          pink: '#FFC8E0',
-          purple: '#DDD0FF',
-          purpleDark: '#453080',
-          orange: '#FFCCA0',
-          teal: '#A8EED0',
-          gray: '#ede0d4'
+          bg: 'var(--y2k-bg)',
+          surface: 'var(--y2k-surface)',
+          text: 'var(--y2k-text)',
+          muted: 'var(--y2k-muted)',
+          border: 'var(--y2k-border)',
+          accent: 'var(--y2k-accent)',
+          green: 'var(--y2k-green)',
+          greenDark: 'var(--y2k-greenDark)',
+          red: 'var(--y2k-red)',
+          redDark: 'var(--y2k-redDark)',
+          yellow: 'var(--y2k-yellow)',
+          yellowDark: 'var(--y2k-yellowDark)',
+          blue: 'var(--y2k-blue)',
+          blueDark: 'var(--y2k-blueDark)',
+          pink: 'var(--y2k-pink)',
+          purple: 'var(--y2k-purple)',
+          purpleDark: 'var(--y2k-purpleDark)',
+          orange: 'var(--y2k-orange)',
+          teal: 'var(--y2k-teal)',
+          gray: 'var(--y2k-gray)'
         }
       },
       fontFamily: {
@@ -37,12 +37,12 @@ export default {
       },
       borderRadius: {
         'none': '0px',
-        'y2k': '0px', // Astryx Y2K Theme uses 0px radii for brutalist Y2K pop
+        'y2k': 'var(--y2k-radius, 0px)',
       },
       boxShadow: {
-        'y2k-sm': '2px 2px 0px #2F292E',
-        'y2k': '4px 4px 0px #2F292E',
-        'y2k-lg': '6px 6px 0px #2F292E',
+        'y2k-sm': 'var(--y2k-shadow-sm)',
+        'y2k': 'var(--y2k-shadow)',
+        'y2k-lg': 'var(--y2k-shadow-lg)',
       }
     },
   },

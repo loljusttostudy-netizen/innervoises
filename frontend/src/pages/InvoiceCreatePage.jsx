@@ -10,9 +10,9 @@ import { formatCurrency } from '../utils/formatNumber.js';
 import { Plus, X, ChevronDown, AlertTriangle } from 'lucide-react';
 import api from '../context/api.js';
 import toast from 'react-hot-toast';
+import { INDIAN_STATES as STATES } from '../utils/indianStates.js';
 
 const GST_SLABS = [0, 5, 12, 18, 28];
-const STATES = ["Uttar Pradesh", "Tamil Nadu", "Delhi", "Maharashtra", "Rajasthan", "Bihar", "Gujarat", "Haryana"];
 
 export function InvoiceCreatePage() {
   const navigate = useNavigate();
@@ -53,12 +53,17 @@ export function InvoiceCreatePage() {
         api.get('/items')
       ]);
 
-      setFactories(facRes.data.data);
-      const activeFacId = localStorage.getItem('selectedFactoryId') || facRes.data.data[0]?._id;
+      const userFactories = facRes.data.data || [];
+      setFactories(userFactories);
+
+      let activeFacId = localStorage.getItem('selectedFactoryId');
+      if (!activeFacId || !userFactories.some(f => f._id === activeFacId)) {
+        activeFacId = userFactories[0]?._id || '';
+      }
       setFactoryId(activeFacId);
 
-      setParties(partyRes.data.data);
-      if (partyRes.data.data.length > 0) {
+      setParties(partyRes.data.data || []);
+      if (partyRes.data.data && partyRes.data.data.length > 0) {
         handleSelectParty(partyRes.data.data[0]);
       }
 
@@ -102,22 +107,18 @@ export function InvoiceCreatePage() {
   const isIntraState = currentFactory && placeOfSupply && currentFactory.state.toLowerCase() === placeOfSupply.toLowerCase();
 
   const checkRateAnomaly = async (partyId, itemId, enteredRate) => {
-    if (!partyId || !itemId || enteredRate <= 0) return null;
+    if (!partyId || !itemId || !enteredRate || enteredRate <= 0) return null;
     try {
-      const res = await api.get(`/items/history/${itemId}?partyId=${partyId}`);
-      const history = res.data.data;
-      if (!history || history.length === 0) return null;
-
-      const lastRecord = history[0];
-      if (lastRecord.lastRate && Math.abs(lastRecord.lastRate - enteredRate) > 0.01) {
+      const res = await api.get(`/invoices/rate-check?itemId=${itemId}&partyId=${partyId}&rate=${enteredRate}`);
+      if (res.data?.data?.isAnomaly) {
         return {
-          lastRate: lastRecord.lastRate,
-          lastDate: lastRecord.lastDate,
-          diff: enteredRate - lastRecord.lastRate
+          message: res.data.data.message,
+          avgRate: res.data.data.avgRate,
+          percentageDev: res.data.data.percentageDev
         };
       }
     } catch (e) {
-      console.error(e);
+      // Silently catch if no rate check history or endpoint parameter mismatch
     }
     return null;
   };
@@ -209,31 +210,61 @@ export function InvoiceCreatePage() {
   }, [rows, isIntraState]);
 
   const handleSubmit = async () => {
-    if (!selectedParty) {
-      toast.error('Please select a buyer party');
+    if (!invoiceNo || !invoiceNo.trim()) {
+      toast.error('Invoice Number is required');
       return;
     }
-    if (!invoiceNo) {
-      toast.error('Invoice number is required');
+    if (!date || !date.trim()) {
+      toast.error('Invoice Date is required');
       return;
+    }
+    if (!factoryId) {
+      toast.error('Please select a Factory Unit. If none exists, create one in Factory Units.');
+      return;
+    }
+    if (!selectedParty) {
+      toast.error('Please select a Buyer / Party');
+      return;
+    }
+    if (!placeOfSupply) {
+      toast.error('Place of Supply is required');
+      return;
+    }
+
+    const validRows = calc.lines.filter(l => l.name && l.name.trim());
+    if (validRows.length === 0) {
+      toast.error('At least 1 item with a valid name is required');
+      return;
+    }
+
+    for (let i = 0; i < validRows.length; i++) {
+      const item = validRows[i];
+      if (!item.qty || Number(item.qty) <= 0) {
+        toast.error(`Quantity for "${item.name}" must be greater than 0`);
+        return;
+      }
+      if (item.rate === undefined || item.rate === null || Number(item.rate) <= 0) {
+        toast.error(`Rate for "${item.name}" must be greater than 0`);
+        return;
+      }
     }
 
     setSubmitting(true);
     try {
       const payload = {
-        invoiceNo,
+        invoiceNo: invoiceNo.trim(),
         date,
         partyId: selectedParty._id,
         factoryId,
         saleType,
         placeOfSupply,
-        items: calc.lines.map((l) => ({
+        items: validRows.map((l) => ({
           itemId: l.itemId,
-          name: l.name,
+          name: l.name.trim(),
           description: l.description || '-',
-          hsn: l.hsn,
+          hsn: l.hsn || '',
           qty: l.qty,
-          unit: l.unit,
+          unit: l.unit || 'NOS',
           rate: l.rate,
           gst: l.gst,
           amount: l.amount
@@ -261,6 +292,22 @@ export function InvoiceCreatePage() {
 
   return (
     <div className="space-y-6 font-sans">
+      {factories.length === 0 && (
+        <div className="p-4 bg-y2k-yellow/30 border border-y2k-yellowDark text-y2k-text rounded-xl flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 text-xs font-bold">
+            <AlertTriangle className="text-y2k-yellowDark shrink-0" size={18} />
+            <span>No Factory Units found. Please add a Factory Unit before generating invoices.</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => navigate('/factories')}
+            className="px-3 py-1.5 bg-y2k-text text-y2k-bg text-xs font-bold rounded-lg border border-y2k-border shrink-0 hover:opacity-90"
+          >
+            + Add Factory Unit
+          </button>
+        </div>
+      )}
+
       {/* Top Config Card */}
       <Card className="grid md:grid-cols-4 gap-4">
         <Field label="Invoice Number">

@@ -2,89 +2,154 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Theme Definitions */
+:root,
+[data-theme="stone-professional"] {
+  --y2k-bg: #F3F2EE;
+  --y2k-surface: #FFFFFF;
+  --y2k-text: #262626;
+  --y2k-muted: #737373;
+  --y2k-border: #E6E4DF;
+  --y2k-border-width: 1px;
+  --y2k-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  --y2k-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.03);
+  --y2k-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.06);
+  --y2k-radius: 12px;
+  --y2k-accent: #262626;
+  --y2k-green: #DCFCE7;
+  --y2k-greenDark: #15803D;
+  --y2k-red: #FEE2E2;
+  --y2k-redDark: #B91C1C;
+  --y2k-yellow: #FEF9C3;
+  --y2k-yellowDark: #A16207;
+  --y2k-blue: #E0F2FE;
+  --y2k-blueDark: #0369A1;
+  --y2k-pink: #FCE7F3;
+  --y2k-purple: #F3E8FF;
+  --y2k-purpleDark: #6B21A8;
+  --y2k-orange: #FFEDD5;
+  --y2k-teal: #CCFBF1;
+  --y2k-gray: #F4F4F5;
+}
+
+[data-theme="astryx-original"] {
+  --y2k-bg: #CCCFFA;
+  --y2k-surface: #FFFFFF;
+  --y2k-text: #2d241b;
+  --y2k-muted: #675d52;
+  --y2k-border: #2F292E;
+  --y2k-border-width: 2px;
+  --y2k-shadow: 4px 4px 0px #2F292E;
+  --y2k-shadow-sm: 2px 2px 0px #2F292E;
+  --y2k-shadow-lg: 6px 6px 0px #2F292E;
+  --y2k-radius: 0px;
+  --y2k-accent: #2d241b;
+  --y2k-green: #C5E17A;
+  --y2k-greenDark: #3a5500;
+  --y2k-red: #FFC5C3;
+  --y2k-redDark: #8b1d24;
+  --y2k-yellow: #FFE08A;
+  --y2k-yellowDark: #614400;
+  --y2k-blue: #B8E0FF;
+  --y2k-blueDark: #004e74;
+  --y2k-pink: #FFC8E0;
+  --y2k-purple: #DDD0FF;
+  --y2k-purpleDark: #453080;
+  --y2k-orange: #FFCCA0;
+  --y2k-teal: #A8EED0;
+  --y2k-gray: #ede0d4;
+}
+
+
 @layer base {
   body {
-    background-color: #CCCFFA;
-    color: #2d241b;
+    background-color: var(--y2k-bg);
+    color: var(--y2k-text);
     font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
     min-height: 100vh;
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Poppins', sans-serif;
-    color: #2d241b;
+    color: var(--y2k-text);
   }
 }
 
-/* Official Astryx Y2K Theme Classes */
+/* Dynamic Theme Classes */
 .y2k-panel {
-  background-color: #FFFFFF;
-  border: 2px solid #2F292E;
-  box-shadow: 4px 4px 0px #2F292E;
+  background-color: var(--y2k-surface);
+  border: var(--y2k-border-width, 1px) solid var(--y2k-border);
+  box-shadow: var(--y2k-shadow);
+  border-radius: var(--y2k-radius, 12px);
 }
 
 .y2k-button-primary {
-  background-color: #2d241b;
-  color: #CCCFFA;
-  border: 2px solid #2F292E;
-  box-shadow: 2px 2px 0px #2F292E;
+  background-color: var(--y2k-text);
+  color: var(--y2k-bg);
+  border: var(--y2k-border-width, 1px) solid var(--y2k-border);
+  box-shadow: var(--y2k-shadow-sm);
+  border-radius: var(--y2k-radius, 12px);
   font-weight: 600;
-  transition: all 0.1s ease;
+  transition: all 0.15s ease;
 }
 
 .y2k-button-primary:hover {
-  transform: translate(-1px, -1px);
-  box-shadow: 4px 4px 0px #2F292E;
+  transform: translateY(-1px);
+  box-shadow: var(--y2k-shadow);
 }
 
 .y2k-button-secondary {
-  background-color: #C5E17A;
-  color: #3a5500;
-  border: 2px solid #3a5500;
-  box-shadow: 2px 2px 0px #2F292E;
+  background-color: var(--y2k-green);
+  color: var(--y2k-greenDark);
+  border: var(--y2k-border-width, 1px) solid var(--y2k-greenDark);
+  box-shadow: var(--y2k-shadow-sm);
+  border-radius: var(--y2k-radius, 12px);
   font-weight: 600;
-  transition: all 0.1s ease;
+  transition: all 0.15s ease;
 }
 
 .y2k-button-secondary:hover {
-  background-color: #b5d16a;
-  transform: translate(-1px, -1px);
-  box-shadow: 4px 4px 0px #2F292E;
+  transform: translateY(-1px);
+  box-shadow: var(--y2k-shadow);
 }
 
 .y2k-button-danger {
-  background-color: #FFC5C3;
-  color: #8b1d24;
-  border: 2px solid #8b1d24;
-  box-shadow: 2px 2px 0px #2F292E;
+  background-color: var(--y2k-red);
+  color: var(--y2k-redDark);
+  border: var(--y2k-border-width, 1px) solid var(--y2k-redDark);
+  box-shadow: var(--y2k-shadow-sm);
+  border-radius: var(--y2k-radius, 12px);
   font-weight: 600;
-  transition: all 0.1s ease;
+  transition: all 0.15s ease;
 }
 
 .y2k-input {
-  background-color: #FFFFFF;
-  border: 2px solid #2F292E;
-  color: #2d241b;
-  box-shadow: 2px 2px 0px #2F292E;
+  background-color: var(--y2k-surface);
+  border: var(--y2k-border-width, 1px) solid var(--y2k-border);
+  color: var(--y2k-text);
+  box-shadow: var(--y2k-shadow-sm);
+  border-radius: var(--y2k-radius, 12px);
   outline: none;
 }
 
 .y2k-input:focus {
-  border-color: #2d241b;
-  box-shadow: 3px 3px 0px #2F292E;
+  border-color: var(--y2k-border);
+  box-shadow: var(--y2k-shadow);
 }
 
-/* Custom scrollbar with Y2K solid styling */
+/* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #CCCFFA;
+  background: var(--y2k-bg);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #2F292E;
-  border: 1px solid #2F292E;
+  background: var(--y2k-border);
+  border-radius: var(--y2k-radius, 12px);
+  border: 1px solid var(--y2k-border);
 }

@@ -6,6 +6,7 @@ import {
     getInvoices,
     getInvoiceById,
     updateInvoice,
+    getInvoiceHtml,
     generatePdf
 } from "../controller/invoice.controller.js";
 import { verifyJwt } from "../middlewares/verifyJwt.js";
@@ -24,6 +25,7 @@ router.route("/:id")
     .get(getInvoiceById)
     .put(updateInvoice);
 
+router.route("/:id/html").get(getInvoiceHtml);
 router.route("/:id/pdf").get(generatePdf);
 
 export default router;

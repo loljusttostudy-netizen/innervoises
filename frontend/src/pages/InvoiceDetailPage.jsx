@@ -18,6 +18,7 @@ export function InvoiceDetailPage() {
   const [invoice, setInvoice] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [selectedFormat, setSelectedFormat] = useState('a4');
 
   const [paymentForm, setPaymentForm] = useState({
     amount: '', date: new Date().toISOString().split('T')[0], mode: 'bank', reference: '', notes: ''
@@ -71,7 +72,7 @@ export function InvoiceDetailPage() {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <button
           onClick={() => navigate('/invoices')}
-          className="flex items-center gap-2 px-4 py-2 bg-white text-y2k-text font-bold text-xs border-2 border-y2k-border hover:bg-y2k-yellow transition-all shadow-y2k-sm"
+          className="flex items-center gap-2 px-4 py-2 bg-y2k-surface text-y2k-text font-bold text-xs border border-y2k-border rounded-lg hover:bg-y2k-bg transition-all"
         >
           <ArrowLeft size={16} /> All Invoices
         </button>
@@ -80,25 +81,26 @@ export function InvoiceDetailPage() {
           {invoice.status !== 'paid' && (
             <button
               onClick={() => setShowPaymentModal(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-y2k-green text-y2k-greenDark font-bold text-xs border-2 border-y2k-greenDark shadow-y2k-sm hover:translate-y-[-1px] transition-all"
+              className="flex items-center gap-2 px-4 py-2 bg-y2k-green text-y2k-greenDark font-bold text-xs border border-y2k-greenDark rounded-lg shadow-y2k-sm hover:translate-y-[-1px] transition-all"
             >
               <DollarSign size={16} /> Record Payment
             </button>
           )}
 
           <a
-            href={`/api/invoices/${invoice._id}/pdf`}
+            href={`/api/invoices/${invoice._id}/html?format=${selectedFormat}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 px-4 py-2 bg-white text-y2k-text font-bold text-xs border-2 border-y2k-border shadow-y2k-sm hover:bg-y2k-bg transition-all"
+            className="flex items-center gap-2 px-4 py-2 bg-y2k-surface text-y2k-text font-bold text-xs border border-y2k-border rounded-lg shadow-y2k-sm hover:bg-y2k-bg transition-all"
           >
-            <Printer size={16} /> Print / Preview
+            <Printer size={16} /> Print / Preview ({selectedFormat.toUpperCase()})
           </a>
 
           <a
-            href={`/api/invoices/${invoice._id}/pdf`}
-            download
-            className="flex items-center gap-2 px-4 py-2 bg-y2k-text text-y2k-bg font-bold text-xs border-2 border-y2k-border shadow-y2k-sm hover:bg-black transition-all"
+            href={`/api/invoices/${invoice._id}/pdf?format=${selectedFormat}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 px-4 py-2 bg-y2k-text text-y2k-bg font-bold text-xs border border-y2k-border rounded-lg shadow-y2k-sm hover:opacity-90 transition-all"
           >
             <Download size={16} /> Download PDF
           </a>
@@ -128,12 +130,39 @@ export function InvoiceDetailPage() {
         </div>
       </Card>
 
-      {/* PDF Embedded Preview Frame */}
-      <Card className="!p-0 overflow-hidden h-[750px]">
+      {/* Print Format Selector Toolbar */}
+      <Card className="flex flex-wrap items-center justify-between gap-3 bg-y2k-surface border border-y2k-border py-3">
+        <span className="text-xs font-bold uppercase tracking-wider text-y2k-muted flex items-center gap-2">
+          <Printer size={16} /> Select Printer & Paper Format:
+        </span>
+        <div className="flex flex-wrap items-center gap-2">
+          {[
+            { id: 'a4', label: 'A4 Desktop / Laser' },
+            { id: 'a5', label: 'A5 Half-Sheet' },
+            { id: '80mm', label: '3" (80mm) POS Thermal / KOT' },
+            { id: '58mm', label: '2" (58mm) Mobile Thermal' }
+          ].map((fmt) => (
+            <button
+              key={fmt.id}
+              onClick={() => setSelectedFormat(fmt.id)}
+              className={`px-3 py-1.5 text-xs font-bold rounded-lg border transition-all ${
+                selectedFormat === fmt.id
+                  ? 'bg-y2k-text text-y2k-bg border-y2k-text shadow-y2k-sm'
+                  : 'bg-y2k-surface text-y2k-text border-y2k-border hover:bg-y2k-bg'
+              }`}
+            >
+              {fmt.label}
+            </button>
+          ))}
+        </div>
+      </Card>
+
+      {/* Interactive Invoice Document Preview Sheet */}
+      <Card className="!p-0 overflow-hidden min-h-[850px] bg-white rounded-2xl shadow-y2k-lg">
         <iframe
-          src={`/api/invoices/${invoice._id}/pdf`}
+          src={`/api/invoices/${invoice._id}/html?format=${selectedFormat}`}
           title={`Invoice ${invoice.invoiceNo}`}
-          className="w-full h-full border-none"
+          className="w-full min-h-[850px] border-none bg-white"
         />
       </Card>
 

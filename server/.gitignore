@@ -22,3 +22,8 @@ public/temp/*
 .DS_Store
 .vscode/
 .idea/
+
+# tests
+test_html.js
+test_run.js
+test_e2e_invoice.js

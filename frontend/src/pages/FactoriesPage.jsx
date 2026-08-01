@@ -8,8 +8,7 @@ import { Modal } from '../components/ui/Modal.jsx';
 import { Plus, Factory, Edit3, Trash2 } from 'lucide-react';
 import api from '../context/api.js';
 import toast from 'react-hot-toast';
-
-const STATES = ["Uttar Pradesh", "Tamil Nadu", "Delhi", "Maharashtra", "Rajasthan", "Bihar", "Gujarat", "Haryana"];
+import { INDIAN_STATES as STATES } from '../utils/indianStates.js';
 
 export function FactoriesPage() {
   const [factories, setFactories] = useState([]);

@@ -3,11 +3,12 @@ import { Party } from "../models/party.models.js";
 import { Factory } from "../models/factory.models.js";
 import { Counter } from "../models/counter.models.js";
 import { BusinessProfile } from "../models/businessProfile.models.js";
+import { Item } from "../models/item.models.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { numberToWordsIndian } from "../utils/numberToWords.js";
-import { generateInvoicePdf } from "../utils/pdfGenerator.js";
+import { generateInvoicePdf, compileInvoiceHtml } from "../utils/pdfGenerator.js";
 import mongoose from "mongoose";
 
 // Utility to parse invoice number into prefix and integer suffix
@@ -133,14 +134,36 @@ const createInvoice = asyncHandler(async (req, res) => {
     const profile = await BusinessProfile.findOne({ $or: [{ user: req.user._id }, { updatedBy: req.user._id }] });
     const globalRateDecimals = profile?.rateDecimalPlaces ?? 2;
 
-    // Calculate line amounts and taxes
+    // Calculate line amounts and taxes, auto-saving new catalog items if needed
     let subtotal = 0;
     let totalGstAmount = 0;
 
-    const processedItems = items.map((r) => {
+    const processedItems = await Promise.all(items.map(async (r) => {
+        let targetItemId = r.itemId || null;
+
+        if (!targetItemId && r.name && r.name.trim()) {
+            let existingItem = await Item.findOne({
+                createdBy: req.user._id,
+                name: { $regex: `^${r.name.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, $options: "i" }
+            });
+            if (!existingItem) {
+                existingItem = await Item.create({
+                    name: r.name.trim(),
+                    hsn: r.hsn || "",
+                    unit: r.unit || "NOS",
+                    rate: Number(r.rate || 0),
+                    gstRate: Number(r.gst || 18),
+                    description: r.description || "-",
+                    category: "General",
+                    createdBy: req.user._id
+                });
+            }
+            targetItemId = existingItem._id;
+        }
+
         const qty = Number(r.qty || 0);
         const rate = Number(r.rate || 0);
-        const gstPct = Number(r.gst || 0);
+        const gstPct = Number(r.gst || 18);
         const amount = qty * rate;
         const lineGst = amount * (gstPct / 100);
 
@@ -148,7 +171,7 @@ const createInvoice = asyncHandler(async (req, res) => {
         totalGstAmount += lineGst;
 
         return {
-            item: r.itemId || null,
+            item: targetItemId,
             name: r.name,
             description: r.description || "-",
             hsn: r.hsn || "",
@@ -159,7 +182,7 @@ const createInvoice = asyncHandler(async (req, res) => {
             amount,
             rateDecimalPlaces: r.rateDecimalPlaces ?? globalRateDecimals
         };
-    });
+    }));
 
     let cgst = 0, sgst = 0, igst = 0;
     if (isIntraState) {
@@ -282,20 +305,41 @@ const updateInvoice = asyncHandler(async (req, res) => {
     );
 });
 
-const generatePdf = asyncHandler(async (req, res) => {
+const getInvoiceHtml = asyncHandler(async (req, res) => {
     const { id } = req.params;
+    const { format } = req.query;
     const invoice = await Invoice.findOne({ _id: id, createdBy: req.user._id }).populate("factory").populate("party");
 
     if (!invoice) throw new ApiError(404, "Invoice not found");
 
     const profile = await BusinessProfile.findOne({ $or: [{ user: req.user._id }, { updatedBy: req.user._id }] });
 
-    const pdfBuffer = await generateInvoicePdf(invoice, profile);
+    const html = compileInvoiceHtml(invoice, profile, format || profile?.defaultPrintFormat || "a4");
 
-    res.setHeader("Content-Type", "application/pdf");
-    res.setHeader("Content-Disposition", `inline; filename="Invoice_${invoice.invoiceNo.replace(/\//g, '_')}.pdf"`);
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    return res.send(html);
+});
 
-    return res.send(pdfBuffer);
+const generatePdf = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { format } = req.query;
+    const invoice = await Invoice.findOne({ _id: id, createdBy: req.user._id }).populate("factory").populate("party");
+
+    if (!invoice) throw new ApiError(404, "Invoice not found");
+
+    const profile = await BusinessProfile.findOne({ $or: [{ user: req.user._id }, { updatedBy: req.user._id }] });
+
+    const result = await generateInvoicePdf(invoice, profile, format || profile?.defaultPrintFormat || "a4");
+
+    if (result.isBuffer) {
+        res.setHeader("Content-Type", "application/pdf");
+        res.setHeader("Content-Disposition", `attachment; filename="Invoice_${invoice.invoiceNo.replace(/\//g, '_')}.pdf"`);
+        return res.send(result.data);
+    } else {
+        res.setHeader("Content-Type", "text/html; charset=utf-8");
+        res.setHeader("Content-Disposition", `attachment; filename="Invoice_${invoice.invoiceNo.replace(/\//g, '_')}.html"`);
+        return res.send(result.data);
+    }
 });
 
 export {
@@ -305,5 +349,6 @@ export {
     getInvoices,
     getInvoiceById,
     updateInvoice,
+    getInvoiceHtml,
     generatePdf
 };

@@ -18,13 +18,18 @@ import {
   RefreshCw, 
   Save, 
   Eye,
-  Sliders
+  Sliders,
+  Moon,
+  Sun,
+  Undo2,
+  Redo2
 } from 'lucide-react';
 import api from '../context/api.js';
 import toast from 'react-hot-toast';
+import { useTheme } from '../context/ThemeContext.jsx';
+import { INDIAN_STATES as STATES } from '../utils/indianStates.js';
 
-const TABS = ["Company Profile", "Invoice Canvas Designer", "Invoice Defaults", "Bank Details", "Number Formatting"];
-const STATES = ["Uttar Pradesh", "Tamil Nadu", "Delhi", "Maharashtra", "Rajasthan", "Bihar", "Gujarat", "Haryana"];
+const TABS = ["Company Profile", "Astryx Themes", "Invoice Canvas Designer", "Invoice Defaults", "Bank Details", "Number Formatting"];
 
 const DEFAULT_CANVA_TEMPLATE = `
 <div id="invoice-document" style="padding: 25px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 11px; background: #ffffff; color: #2d241b; line-height: 1.3;">
@@ -76,11 +81,12 @@ const DEFAULT_CANVA_TEMPLATE = `
     <thead>
       <tr style="border-top: 1.5px solid #2d241b; border-bottom: 1.5px solid #2d241b; background-color: #f7f7fc;">
         <th style="padding: 6px 4px; text-align: center; font-weight: bold; width: 5%;">#</th>
-        <th style="padding: 6px 4px; text-align: left; font-weight: bold; width: 30%;">Item Description</th>
+        <th style="padding: 6px 4px; text-align: left; font-weight: bold; width: 32%;">Item Description</th>
         <th style="padding: 6px 4px; text-align: center; font-weight: bold; width: 12%;">HSN/SAC</th>
-        <th style="padding: 6px 4px; text-align: right; font-weight: bold; width: 15%;">Qty</th>
-        <th style="padding: 6px 4px; text-align: right; font-weight: bold; width: 15%;">Rate (₹)</th>
-        <th style="padding: 6px 4px; text-align: right; font-weight: bold; width: 23%;">Amount (₹)</th>
+        <th style="padding: 6px 4px; text-align: right; font-weight: bold; width: 13%;">Qty</th>
+        <th style="padding: 6px 4px; text-align: center; font-weight: bold; width: 8%;">Unit</th>
+        <th style="padding: 6px 4px; text-align: right; font-weight: bold; width: 13%;">Rate (₹)</th>
+        <th style="padding: 6px 4px; text-align: right; font-weight: bold; width: 17%;">Amount (₹)</th>
       </tr>
     </thead>
     <tbody>
@@ -89,7 +95,8 @@ const DEFAULT_CANVA_TEMPLATE = `
         <td style="padding: 6px 4px; text-align: center;">{{addOne @index}}</td>
         <td style="padding: 6px 4px;"><strong>{{name}}</strong></td>
         <td style="padding: 6px 4px; text-align: center;">{{hsn}}</td>
-        <td style="padding: 6px 4px; text-align: right;">{{qtyFormatted}} {{unit}}</td>
+        <td style="padding: 6px 4px; text-align: right;">{{qtyFormatted}}</td>
+        <td style="padding: 6px 4px; text-align: center;">{{unit}}</td>
         <td style="padding: 6px 4px; text-align: right;">₹{{rateFormatted}}</td>
         <td style="padding: 6px 4px; text-align: right;">₹{{amountFormatted}}</td>
       </tr>
@@ -97,6 +104,7 @@ const DEFAULT_CANVA_TEMPLATE = `
       <tr style="border-top: 1.5px solid #2d241b; border-bottom: 1.5px solid #2d241b; font-weight: bold;">
         <td colspan="3" style="padding: 6px 4px;"><strong>SubTotal</strong></td>
         <td style="padding: 6px 4px; text-align: right;"><strong>{{totalQtyFormatted}}</strong></td>
+        <td></td>
         <td style="padding: 6px 4px; text-align: right;"><strong>₹{{totalRateFormatted}}</strong></td>
         <td style="padding: 6px 4px; text-align: right;"><strong>₹{{subtotalFormatted}}</strong></td>
       </tr>
@@ -150,6 +158,7 @@ const DEFAULT_CANVA_TEMPLATE = `
 `;
 
 export function SettingsPage() {
+  const { activeThemeId, changeTheme, themes } = useTheme();
   const [profile, setProfile] = useState(null);
   const [tab, setTab] = useState("Company Profile");
   const [loading, setLoading] = useState(true);
@@ -197,6 +206,14 @@ export function SettingsPage() {
     }
   };
 
+  const handleUndo = () => {
+    document.execCommand('undo', false, null);
+  };
+
+  const handleRedo = () => {
+    document.execCommand('redo', false, null);
+  };
+
   const handleApplyColorToSelection = (color) => {
     setSelectedColor(color);
     document.execCommand('foreColor', false, color);
@@ -205,11 +222,17 @@ export function SettingsPage() {
   const handleApplyFontSizeToSelection = (size) => {
     setSelectedFontSize(size);
     const sel = window.getSelection();
-    if (sel.rangeCount) {
+    if (sel.rangeCount && !sel.isCollapsed) {
       const range = sel.getRangeAt(0);
       const span = document.createElement('span');
       span.style.fontSize = size;
-      range.surroundContents(span);
+      try {
+        range.surroundContents(span);
+      } catch (e) {
+        document.execCommand('fontSize', false, '3');
+      }
+    } else {
+      document.execCommand('fontSize', false, '3');
     }
   };
 
@@ -285,7 +308,7 @@ export function SettingsPage() {
 
   return (
     <div className="space-y-6 font-sans">
-      <div className="bg-white border-2 border-y2k-border shadow-y2k p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-y2k-surface border border-y2k-border shadow-y2k p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl">
         <div>
           <span className="text-[10px] font-bold uppercase tracking-widest text-y2k-muted">System Preferences</span>
           <h2 className="text-xl font-black text-y2k-text tracking-tight uppercase">Business Profile & Interactive Canvas Designer</h2>
@@ -293,14 +316,14 @@ export function SettingsPage() {
         <button
           onClick={handleSaveProfile}
           disabled={saving}
-          className="px-6 py-2.5 bg-y2k-green text-y2k-greenDark font-bold text-xs border-2 border-y2k-greenDark shadow-y2k hover:translate-y-[-1px] transition-all disabled:opacity-50 shrink-0"
+          className="px-6 py-2.5 bg-y2k-green text-y2k-greenDark font-bold text-xs border border-y2k-greenDark rounded-lg shadow-y2k hover:translate-y-[-1px] transition-all disabled:opacity-50 shrink-0"
         >
           {saving ? 'Saving...' : 'Save All Settings'}
         </button>
       </div>
 
       {/* Y2K Tab Bar */}
-      <div className="flex flex-wrap gap-2 p-1 bg-white border-2 border-y2k-border shadow-y2k-sm w-fit">
+      <div className="flex flex-wrap gap-2 p-1.5 bg-y2k-surface border border-y2k-border rounded-xl shadow-y2k-sm w-fit">
         {TABS.map((t) => (
           <button
             key={t}
@@ -526,15 +549,123 @@ export function SettingsPage() {
         </div>
       )}
 
+      {/* TAB: ASTRYX THEMES */}
+      {tab === "Astryx Themes" && (
+        <div className="space-y-6">
+          <Card className="space-y-4">
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-y2k-muted">Appearance & Visual Style</span>
+              <h3 className="text-lg font-black text-y2k-text uppercase tracking-tight">Theme Suite</h3>
+              <p className="text-xs text-y2k-muted font-medium mt-1">
+                Select your preferred theme. Your choice is automatically saved and synced across all pages.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+              {themes.map((theme) => {
+                const isActive = theme.id === activeThemeId;
+                return (
+                  <div
+                    key={theme.id}
+                    onClick={() => changeTheme(theme.id)}
+                    className={`p-4 border rounded-xl cursor-pointer transition-all flex flex-col justify-between gap-4 ${
+                      isActive
+                        ? 'border-y2k-border bg-y2k-surface shadow-y2k scale-[1.01]'
+                        : 'border-y2k-border/50 bg-y2k-surface/80 hover:border-y2k-border hover:shadow-y2k-sm'
+                    }`}
+                  >
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 font-black text-sm text-y2k-text uppercase tracking-tight">
+                          {theme.isDark ? <Moon size={16} className="text-y2k-purpleDark" /> : <Sun size={16} className="text-y2k-yellowDark" />}
+                          <span>{theme.name}</span>
+                        </div>
+                        {isActive ? (
+                          <span className="px-2.5 py-1 text-[10px] font-black uppercase tracking-wider bg-y2k-green text-y2k-greenDark border border-y2k-greenDark rounded-full flex items-center gap-1">
+                            <CheckCircle2 size={12} /> Active
+                          </span>
+                        ) : (
+                          <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-y2k-bg text-y2k-muted border border-y2k-border rounded-full">
+                            {theme.isDark ? 'Dark' : 'Light'}
+                          </span>
+                        )}
+                      </div>
+
+                      <p className="text-xs font-bold text-y2k-muted">
+                        {theme.tagline}
+                      </p>
+                      <p className="text-xs text-y2k-muted/80 leading-relaxed">
+                        {theme.description}
+                      </p>
+                    </div>
+
+                    {/* Color Swatch Bar */}
+                    <div className="flex items-center justify-between pt-3 border-t border-y2k-border/20">
+                      <div className="flex items-center gap-1.5">
+                        {theme.swatches.map((colorHex, idx) => (
+                          <div
+                            key={idx}
+                            className="w-6 h-6 border border-black/20 rounded-md shadow-sm transition-transform hover:scale-110"
+                            style={{ backgroundColor: colorHex }}
+                            title={colorHex}
+                          />
+                        ))}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          changeTheme(theme.id);
+                        }}
+                        className={`px-3 py-1.5 text-xs font-black uppercase tracking-wider transition-all border rounded-lg ${
+                          isActive
+                            ? 'bg-y2k-text text-y2k-bg border-y2k-border shadow-y2k-sm'
+                            : 'bg-y2k-bg text-y2k-text border-y2k-border hover:bg-y2k-green hover:text-y2k-greenDark'
+                        }`}
+                      >
+                        {isActive ? 'Current' : 'Select'}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </Card>
+        </div>
+      )}
+
       {/* TAB 2: INTERACTIVE CANVA CANVAS DESIGNER */}
       {tab === "Invoice Canvas Designer" && (
         <div className="space-y-4">
           {/* Canva Top Formatting Toolbar */}
           <div className="sticky top-16 z-30 bg-white border-2 border-y2k-border shadow-y2k p-3 flex flex-wrap items-center justify-between gap-3">
             <div className="flex flex-wrap items-center gap-2">
+              {/* Undo / Redo */}
+              <div className="flex border-2 border-y2k-border bg-white">
+                <button
+                  type="button"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={handleUndo}
+                  className="p-1.5 hover:bg-y2k-bg border-r border-y2k-border"
+                  title="Undo (Ctrl+Z)"
+                >
+                  <Undo2 size={16} />
+                </button>
+                <button
+                  type="button"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={handleRedo}
+                  className="p-1.5 hover:bg-y2k-bg"
+                  title="Redo (Ctrl+Y)"
+                >
+                  <Redo2 size={16} />
+                </button>
+              </div>
+
               {/* Bold */}
               <button
                 type="button"
+                onMouseDown={(e) => e.preventDefault()}
                 onClick={handleApplyBold}
                 className="p-1.5 bg-white border-2 border-y2k-border hover:bg-y2k-bg font-bold text-xs"
                 title="Bold Text"
@@ -558,23 +689,25 @@ export function SettingsPage() {
 
               {/* Text Alignments */}
               <div className="flex border-2 border-y2k-border bg-white">
-                <button type="button" onClick={() => handleApplyAlign('left')} className="p-1.5 hover:bg-y2k-bg border-r border-y2k-border"><AlignLeft size={14} /></button>
-                <button type="button" onClick={() => handleApplyAlign('center')} className="p-1.5 hover:bg-y2k-bg border-r border-y2k-border"><AlignCenter size={14} /></button>
-                <button type="button" onClick={() => handleApplyAlign('right')} className="p-1.5 hover:bg-y2k-bg"><AlignRight size={14} /></button>
+                <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => handleApplyAlign('left')} className="p-1.5 hover:bg-y2k-bg border-r border-y2k-border"><AlignLeft size={14} /></button>
+                <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => handleApplyAlign('center')} className="p-1.5 hover:bg-y2k-bg border-r border-y2k-border"><AlignCenter size={14} /></button>
+                <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => handleApplyAlign('right')} className="p-1.5 hover:bg-y2k-bg"><AlignRight size={14} /></button>
               </div>
 
               {/* Color Swatches */}
               <div className="flex items-center gap-1 border-2 border-y2k-border p-1 bg-white">
                 <Palette size={14} className="text-y2k-muted ml-1" />
                 {[
-                  '#2d241b', '#004e74', '#3a5500', '#8b1d24', '#453080', '#000000'
+                  '#2d241b', '#004e74', '#3a5500', '#8b1d24', '#453080', '#000000', '#dc2626', '#16a34a', '#2563eb'
                 ].map(hex => (
                   <button
                     key={hex}
                     type="button"
+                    onMouseDown={(e) => e.preventDefault()}
                     onClick={() => handleApplyColorToSelection(hex)}
                     style={{ backgroundColor: hex }}
                     className="w-5 h-5 border border-y2k-border hover:scale-110 transition-transform"
+                    title={`Apply ${hex}`}
                   />
                 ))}
               </div>
@@ -604,7 +737,7 @@ export function SettingsPage() {
           <div className="text-xs font-semibold text-y2k-muted flex items-center gap-2 bg-y2k-bg/40 p-2.5 border-2 border-y2k-border">
             <Type size={16} className="text-y2k-text shrink-0" />
             <span>
-              <strong>Canva Style Interactive Mode:</strong> Click directly on any text or section below to type, edit headers, format fonts, or change colors!
+              <strong>Canva Style Interactive Mode:</strong> Highlight any text to format color, font size, bold, or alignment. Use Undo/Redo buttons to step back or forward!
             </span>
           </div>
 
@@ -612,10 +745,12 @@ export function SettingsPage() {
           <div className="bg-y2k-gray/40 p-6 md:p-10 border-2 border-y2k-border flex justify-center">
             <div
               className="w-full max-w-[800px] bg-white border-2 border-y2k-border shadow-y2k-lg p-8 min-h-[900px] outline-none"
-              contentEditable={false}
             >
               <div
                 ref={canvasRef}
+                contentEditable={true}
+                suppressContentEditableWarning={true}
+                className="outline-none"
                 dangerouslySetInnerHTML={{
                   __html: profile.customHtml && profile.customHtml.trim().length > 0
                     ? profile.customHtml
@@ -631,6 +766,19 @@ export function SettingsPage() {
       {tab === "Invoice Defaults" && (
         <div className="space-y-6">
           <Card className="space-y-4">
+            <Field label="Default Printer & Paper Format">
+              <Select
+                value={profile.defaultPrintFormat || 'a4'}
+                onChange={(e) => setProfile({ ...profile, defaultPrintFormat: e.target.value })}
+                options={[
+                  { label: "A4 Desktop / Laser Standard", value: "a4" },
+                  { label: "A5 Half-Sheet Compact", value: "a5" },
+                  { label: "3 inch (80mm) POS Thermal Receipt / KOT", value: "80mm" },
+                  { label: "2 inch (58mm) Mobile POS Thermal", value: "58mm" }
+                ]}
+              />
+            </Field>
+
             <Field label="Default Payment Terms text">
               <Input
                 value={profile.defaultPaymentTerms || ''}

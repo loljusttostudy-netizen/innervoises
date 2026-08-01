@@ -67,12 +67,12 @@ export function AutocompleteInput({
       />
 
       {isOpen && suggestions.length > 0 && (
-        <ul className="absolute z-50 left-0 right-0 mt-1 bg-white border-2 border-y2k-border shadow-y2k max-h-56 overflow-y-auto divide-y border-y2k-border">
+        <ul className="absolute z-50 left-0 right-0 mt-1 bg-y2k-surface border border-y2k-border shadow-y2k max-h-56 overflow-y-auto divide-y divide-y2k-border rounded-lg">
           {suggestions.map((item, idx) => (
             <li
               key={idx}
               onClick={() => handleSelectItem(item)}
-              className="px-4 py-2.5 hover:bg-y2k-green/40 text-sm font-semibold text-y2k-text cursor-pointer transition-colors"
+              className="px-4 py-2.5 hover:bg-y2k-green/30 text-sm font-semibold text-y2k-text cursor-pointer transition-colors"
             >
               {typeof item === 'object' ? (
                 <div>

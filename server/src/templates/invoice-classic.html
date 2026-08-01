@@ -159,6 +159,10 @@
             font-size: 11px;
         }
 
+        .totals-block.full-width {
+            width: 100%;
+        }
+
         .totals-row {
             display: flex;
             justify-content: space-between;
@@ -226,18 +230,18 @@
         <div class="header-logo">
             {{#if logoUrl}}
                 <img src="{{logoUrl}}" alt="Logo" />
-            {{else if companyName}}
+            {{else}}
                 <div style="font-weight: bold; font-size: 16px;">{{companyName}}</div>
             {{/if}}
         </div>
         <div class="header-center">
             <h1>{{companyName}}</h1>
-            <p>{{address}}, {{city}}, {{state}} {{pincode}}</p>
-            <p>(M)-{{phone}} Email- {{email}}</p>
+            {{#if address}}<p>{{address}}, {{city}}, {{state}} {{pincode}}</p>{{/if}}
+            <p>{{#if phone}}(M)-{{phone}}{{/if}} {{#if email}}Email- {{email}}{{/if}}</p>
             {{#each taglines}}
                 <p style="font-weight: 500;">{{this}}</p>
             {{/each}}
-            <p style="font-weight: bold; margin-top: 2px;">GSTIN: {{gstin}}</p>
+            {{#if gstin}}<p style="font-weight: bold; margin-top: 2px;">GSTIN: {{gstin}}</p>{{/if}}
         </div>
         <div class="header-title">
             Invoice
@@ -250,18 +254,24 @@
             <td style="width: 50%;"><strong>Invoice Number :</strong> {{invoiceNo}}</td>
             <td style="width: 50%; text-align: right;"><strong>Invoice Date :</strong> {{date}}</td>
         </tr>
+        {{#if placeOfSupply}}
         <tr>
             <td><strong>Place of Supply :</strong> {{placeOfSupply}}</td>
             <td></td>
         </tr>
+        {{/if}}
+        {{#if eWayBillNo}}
         <tr>
             <td><strong>E-Way Bill No. :</strong> {{eWayBillNo}}</td>
-            <td style="text-align: right;"><strong>No. of Cases :</strong> {{noOfCases}}</td>
+            {{#if noOfCases}}<td style="text-align: right;"><strong>No. of Cases :</strong> {{noOfCases}}</td>{{/if}}
         </tr>
+        {{/if}}
+        {{#if transportName}}
         <tr>
             <td><strong>Transport Name :</strong> {{transportName}}</td>
             <td></td>
         </tr>
+        {{/if}}
     </table>
 
     <!-- ADDRESSES -->
@@ -269,8 +279,8 @@
         <div class="address-col">
             <h4>Bill To</h4>
             <p><strong>{{party.name}}</strong></p>
-            <p><strong>GSTIN : {{party.gstin}}</strong></p>
-            <p>{{party.billingAddress}}</p>
+            {{#if party.gstin}}<p><strong>GSTIN : {{party.gstin}}</strong></p>{{/if}}
+            {{#if party.billingAddress}}<p>{{party.billingAddress}}</p>{{/if}}
         </div>
         <div class="address-col">
             <h4>Ship To</h4>
@@ -283,14 +293,12 @@
         <thead>
             <tr>
                 <th style="width: 5%;" class="text-center">#</th>
-                <th style="width: 25%;">Items</th>
-                <th style="width: 20%;">Description</th>
-                <th style="width: 10%;" class="text-center">HSN/SAC</th>
-                <th style="width: 12%;" class="text-right">Qty</th>
+                <th style="width: 32%;">Item Description</th>
+                <th style="width: 12%;" class="text-center">HSN/SAC</th>
+                <th style="width: 13%;" class="text-right">Qty</th>
                 <th style="width: 8%;" class="text-center">Unit</th>
-                <th style="width: 10%;" class="text-right">Rate</th>
-                <th style="width: 8%;" class="text-center">Tax</th>
-                <th style="width: 12%;" class="text-right">Amount</th>
+                <th style="width: 13%;" class="text-right">Rate</th>
+                <th style="width: 17%;" class="text-right">Amount</th>
             </tr>
         </thead>
         <tbody>
@@ -298,22 +306,19 @@
             <tr class="item-row">
                 <td class="text-center">{{addOne @index}}</td>
                 <td><strong>{{name}}</strong></td>
-                <td>{{description}}</td>
                 <td class="text-center">{{hsn}}</td>
                 <td class="text-right">{{qtyFormatted}}</td>
                 <td class="text-center">{{unit}}</td>
                 <td class="text-right">₹{{rateFormatted}}</td>
-                <td class="text-center">{{gst}}%</td>
                 <td class="text-right">₹{{amountFormatted}}</td>
             </tr>
             {{/each}}
             
             <tr class="subtotal-row">
-                <td colspan="4"><strong>SubTotal</strong></td>
+                <td colspan="3"><strong>SubTotal</strong></td>
                 <td class="text-right"><strong>{{totalQtyFormatted}}</strong></td>
                 <td></td>
                 <td class="text-right"><strong>₹{{totalRateFormatted}}</strong></td>
-                <td></td>
                 <td class="text-right"><strong>₹{{subtotalFormatted}}</strong></td>
             </tr>
         </tbody>
@@ -321,19 +326,19 @@
 
     <!-- FOOTER SECTION -->
     <div class="footer-section">
+        {{#if showBankDetails}}
         <div class="bank-details">
             <h4>Bank Details</h4>
-            <p>Name : {{bankAccountName}}</p>
-            <p>IFSC CODE : {{bankIfsc}}</p>
-            <p>Account no : {{bankAccountNo}}</p>
-            <p>Bank : {{bankName}}, {{bankBranch}}</p>
-            <p style="margin-top: 6px;"><strong>Payment Terms: {{paymentTerms}}</strong></p>
-            {{#if packingDetails}}
-                <p style="margin-top: 4px;">{{packingDetails}}</p>
-            {{/if}}
+            {{#if bankAccountName}}<p>Name : {{bankAccountName}}</p>{{/if}}
+            {{#if bankIfsc}}<p>IFSC CODE : {{bankIfsc}}</p>{{/if}}
+            {{#if bankAccountNo}}<p>Account no : {{bankAccountNo}}</p>{{/if}}
+            {{#if bankName}}<p>Bank : {{bankName}} {{bankBranch}}</p>{{/if}}
+            {{#if paymentTerms}}<p style="margin-top: 6px;"><strong>Payment Terms: {{paymentTerms}}</strong></p>{{/if}}
+            {{#if packingDetails}}<p style="margin-top: 4px;">{{packingDetails}}</p>{{/if}}
         </div>
+        {{/if}}
 
-        <div class="totals-block">
+        <div class="totals-block {{#unless showBankDetails}}full-width{{/unless}}">
             <div class="totals-row">
                 <span>SubTotal</span>
                 <span>₹{{subtotalFormatted}}</span>
@@ -392,9 +397,11 @@
         </div>
     </div>
 
+    {{#if footerText}}
     <div class="computer-generated">
         {{footerText}}
     </div>
+    {{/if}}
 
 </body>
 </html>

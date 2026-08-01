@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>KOT / Receipt 80mm</title>
+    <style>
+        @page {
+            size: 80mm auto;
+            margin: 0;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Courier New', Courier, monospace;
+            color: #000;
+        }
+        body {
+            width: 76mm;
+            padding: 3mm;
+            margin: 0 auto;
+            font-size: 11px;
+            line-height: 1.2;
+            background: #fff;
+        }
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .bold { font-weight: bold; }
+        
+        .divider {
+            border-top: 1px dashed #000;
+            margin: 4px 0;
+        }
+        .double-divider {
+            border-top: 2px solid #000;
+            margin: 4px 0;
+        }
+
+        .header h2 {
+            font-size: 15px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .header p {
+            font-size: 10px;
+        }
+
+        .receipt-info table {
+            width: 100%;
+            font-size: 10.5px;
+        }
+
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10.5px;
+            margin: 4px 0;
+        }
+        .items-table th {
+            text-align: left;
+            border-bottom: 1px dashed #000;
+            padding: 2px 0;
+        }
+        .items-table td {
+            padding: 2px 0;
+            vertical-align: top;
+        }
+
+        .totals-table {
+            width: 100%;
+            font-size: 10.5px;
+        }
+        .totals-table td {
+            padding: 1px 0;
+        }
+
+        .grand-total {
+            font-size: 14px;
+            font-weight: bold;
+            border-top: 1px dashed #000;
+            border-bottom: 1px dashed #000;
+            padding: 4px 0;
+            margin: 4px 0;
+        }
+
+        .footer {
+            font-size: 9.5px;
+            margin-top: 6px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- RECEIPT HEADER -->
+    <div class="header text-center">
+        <h2>{{companyName}}</h2>
+        {{#if address}}<p>{{address}}, {{city}}</p>{{/if}}
+        {{#if phone}}<p>Ph: {{phone}}</p>{{/if}}
+        {{#if gstin}}<p class="bold">GSTIN: {{gstin}}</p>{{/if}}
+    </div>
+
+    <div class="double-divider"></div>
+    <div class="text-center bold" style="font-size: 13px;">TAX INVOICE / BILL</div>
+    <div class="divider"></div>
+
+    <!-- RECEIPT META -->
+    <div class="receipt-info">
+        <table>
+            <tr>
+                <td><strong>Bill No:</strong> {{invoiceNo}}</td>
+                <td class="text-right"><strong>Date:</strong> {{date}}</td>
+            </tr>
+            <tr>
+                <td colspan="2"><strong>Customer:</strong> {{party.name}}</td>
+            </tr>
+            {{#if party.gstin}}
+            <tr>
+                <td colspan="2"><strong>Customer GST:</strong> {{party.gstin}}</td>
+            </tr>
+            {{/if}}
+        </table>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- ITEMS TABLE -->
+    <table class="items-table">
+        <thead>
+            <tr>
+                <th style="width: 30%;">Item</th>
+                <th style="width: 15%;" class="text-center">HSN</th>
+                <th style="width: 12%;" class="text-center">Qty</th>
+                <th style="width: 10%;" class="text-center">Unit</th>
+                <th style="width: 15%;" class="text-right">Rate</th>
+                <th style="width: 18%;" class="text-right">Amt</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{#each items}}
+            <tr>
+                <td><strong>{{name}}</strong></td>
+                <td class="text-center">{{hsn}}</td>
+                <td class="text-center">{{qtyFormatted}}</td>
+                <td class="text-center">{{unit}}</td>
+                <td class="text-right">{{rateFormatted}}</td>
+                <td class="text-right">{{amountFormatted}}</td>
+            </tr>
+            {{/each}}
+        </tbody>
+    </table>
+
+    <div class="divider"></div>
+
+    <!-- TOTALS -->
+    <table class="totals-table">
+        <tr>
+            <td>SubTotal:</td>
+            <td class="text-right">₹{{subtotalFormatted}}</td>
+        </tr>
+        {{#if isIntraState}}
+        <tr>
+            <td>CGST ({{halvedGstPct}}%):</td>
+            <td class="text-right">₹{{cgstFormatted}}</td>
+        </tr>
+        <tr>
+            <td>SGST ({{halvedGstPct}}%):</td>
+            <td class="text-right">₹{{sgstFormatted}}</td>
+        </tr>
+        {{else}}
+        <tr>
+            <td>IGST:</td>
+            <td class="text-right">₹{{igstFormatted}}</td>
+        </tr>
+        {{/if}}
+        {{#if roundOffFormatted}}
+        <tr>
+            <td>Round Off:</td>
+            <td class="text-right">₹{{roundOffFormatted}}</td>
+        </tr>
+        {{/if}}
+    </table>
+
+    <div class="grand-total text-center">
+        NET TOTAL: ₹{{totalFormatted}}
+    </div>
+
+    <div class="footer text-center">
+        <p class="bold">Thank You! Visit Again</p>
+        <p style="font-size: 8.5px; margin-top: 2px;">{{footerText}}</p>
+    </div>
+
+</body>
+</html>

@@ -10,8 +10,7 @@ import { formatCurrency } from '../utils/formatNumber.js';
 import { Search, Plus, UserCheck, Phone, ChevronRight } from 'lucide-react';
 import api from '../context/api.js';
 import toast from 'react-hot-toast';
-
-const STATES = ["Uttar Pradesh", "Tamil Nadu", "Delhi", "Maharashtra", "Rajasthan", "Bihar", "Gujarat", "Haryana"];
+import { INDIAN_STATES as STATES } from '../utils/indianStates.js';
 
 export function PartiesPage() {
   const navigate = useNavigate();

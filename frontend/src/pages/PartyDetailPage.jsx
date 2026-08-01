@@ -9,9 +9,9 @@ import { formatCurrency } from '../utils/formatNumber.js';
 import { ArrowLeft, FileText } from 'lucide-react';
 import api from '../context/api.js';
 import toast from 'react-hot-toast';
+import { INDIAN_STATES as STATES } from '../utils/indianStates.js';
 
 const PARTY_TABS = ["Details", "Logistics & refs", "Banking", "Ledger", "History"];
-const STATES = ["Uttar Pradesh", "Tamil Nadu", "Delhi", "Maharashtra", "Rajasthan", "Bihar", "Gujarat", "Haryana"];
 
 export function PartyDetailPage() {
   const { id } = useParams();

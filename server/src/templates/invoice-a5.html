@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Invoice A5</title>
+    <style>
+        @page {
+            size: A5 landscape;
+            margin: 5mm;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            color: #000;
+        }
+        body {
+            padding: 12px;
+            font-size: 10px;
+            background: #fff;
+            line-height: 1.2;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 1.5px solid #000;
+            padding-bottom: 6px;
+            margin-bottom: 6px;
+        }
+        .header-logo img {
+            max-width: 80px;
+            max-height: 50px;
+        }
+        .header-center {
+            text-align: center;
+            flex: 1;
+            padding: 0 8px;
+        }
+        .header-center h1 {
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .header-center p {
+            font-size: 9.5px;
+        }
+        .header-title {
+            font-size: 18px;
+            font-weight: bold;
+            text-align: right;
+        }
+        .meta-table {
+            width: 100%;
+            margin-bottom: 6px;
+            font-size: 10px;
+        }
+        .meta-table td {
+            padding: 2px 4px;
+        }
+        .address-box {
+            display: flex;
+            border: 1px solid #000;
+            margin-bottom: 6px;
+        }
+        .address-col {
+            flex: 1;
+            padding: 6px;
+        }
+        .address-col:first-child {
+            border-right: 1px solid #000;
+        }
+        .address-col h4 {
+            font-size: 10px;
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 6px;
+        }
+        .items-table th {
+            border-top: 1px solid #000;
+            border-bottom: 1px solid #000;
+            padding: 4px 2px;
+            font-size: 9.5px;
+            text-align: left;
+        }
+        .items-table td {
+            padding: 4px 2px;
+            font-size: 9.5px;
+        }
+        .items-table tr.item-row td {
+            border-bottom: 1px solid #eee;
+        }
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+        .footer-section {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 6px;
+        }
+        .bank-details {
+            width: 48%;
+            font-size: 9.5px;
+        }
+        .totals-block {
+            width: 48%;
+            font-size: 10px;
+        }
+        .totals-block.full-width {
+            width: 100%;
+        }
+        .totals-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 2px 0;
+        }
+        .grand-total {
+            font-size: 12px;
+            font-weight: bold;
+            border-top: 1px solid #000;
+            border-bottom: 1px solid #000;
+            padding: 4px 0;
+            margin-top: 2px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <div class="header">
+        <div class="header-logo">
+            {{#if logoUrl}}
+                <img src="{{logoUrl}}" alt="Logo" />
+            {{else}}
+                <div style="font-weight: bold; font-size: 14px;">{{companyName}}</div>
+            {{/if}}
+        </div>
+        <div class="header-center">
+            <h1>{{companyName}}</h1>
+            {{#if address}}<p>{{address}}, {{city}} {{pincode}}</p>{{/if}}
+            <p>{{#if phone}}Ph: {{phone}}{{/if}} {{#if gstin}}| GSTIN: {{gstin}}{{/if}}</p>
+        </div>
+        <div class="header-title">
+            INVOICE (A5)
+        </div>
+    </div>
+
+    <!-- META INFO -->
+    <table class="meta-table">
+        <tr>
+            <td><strong>Invoice No:</strong> {{invoiceNo}}</td>
+            <td class="text-right"><strong>Date:</strong> {{date}}</td>
+        </tr>
+    </table>
+
+    <!-- ADDRESSES -->
+    <div class="address-box">
+        <div class="address-col">
+            <h4>Bill To: {{party.name}}</h4>
+            {{#if party.gstin}}<p>GSTIN: {{party.gstin}}</p>{{/if}}
+            {{#if party.billingAddress}}<p>{{party.billingAddress}}</p>{{/if}}
+        </div>
+    </div>
+
+    <!-- ITEMS TABLE -->
+    <table class="items-table">
+        <thead>
+            <tr>
+                <th style="width: 5%;" class="text-center">#</th>
+                <th style="width: 30%;">Item Description</th>
+                <th style="width: 12%;" class="text-center">HSN</th>
+                <th style="width: 12%;" class="text-right">Qty</th>
+                <th style="width: 8%;" class="text-center">Unit</th>
+                <th style="width: 15%;" class="text-right">Rate</th>
+                <th style="width: 18%;" class="text-right">Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{#each items}}
+            <tr class="item-row">
+                <td class="text-center">{{addOne @index}}</td>
+                <td><strong>{{name}}</strong></td>
+                <td class="text-center">{{hsn}}</td>
+                <td class="text-right">{{qtyFormatted}}</td>
+                <td class="text-center">{{unit}}</td>
+                <td class="text-right">₹{{rateFormatted}}</td>
+                <td class="text-right">₹{{amountFormatted}}</td>
+            </tr>
+            {{/each}}
+        </tbody>
+    </table>
+
+    <!-- FOOTER SECTION -->
+    <div class="footer-section">
+        {{#if showBankDetails}}
+        <div class="bank-details">
+            <p><strong>Bank:</strong> {{bankName}} | A/C: {{bankAccountNo}}</p>
+            <p><strong>IFSC:</strong> {{bankIfsc}}</p>
+        </div>
+        {{/if}}
+
+        <div class="totals-block {{#unless showBankDetails}}full-width{{/unless}}">
+            <div class="totals-row">
+                <span>SubTotal:</span>
+                <span>₹{{subtotalFormatted}}</span>
+            </div>
+            {{#if isIntraState}}
+            <div class="totals-row">
+                <span>GST:</span>
+                <span>₹{{cgstFormatted}} x 2</span>
+            </div>
+            {{else}}
+            <div class="totals-row">
+                <span>IGST:</span>
+                <span>₹{{igstFormatted}}</span>
+            </div>
+            {{/if}}
+            <div class="totals-row grand-total">
+                <span>Total Amount:</span>
+                <span>₹{{totalFormatted}}</span>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
