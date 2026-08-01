@@ -18,4 +18,11 @@ api.interceptors.request.use(
   }
 );
 
+export function getApiUrl(path) {
+  const baseURL = import.meta.env.VITE_BACKEND_URL || '/api';
+  const cleanBase = baseURL.endsWith('/') ? baseURL.slice(0, -1) : baseURL;
+  const cleanPath = path.startsWith('/') ? path : `/${path}`;
+  return `${cleanBase}${cleanPath}`;
+}
+
 export default api;

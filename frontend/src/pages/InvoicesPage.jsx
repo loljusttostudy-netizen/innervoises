@@ -6,7 +6,7 @@ import { Input } from '../components/ui/Input.jsx';
 import { Select } from '../components/ui/Select.jsx';
 import { formatCurrency } from '../utils/formatNumber.js';
 import { Search, Plus, Printer, FileText, Download } from 'lucide-react';
-import api from '../context/api.js';
+import api, { getApiUrl } from '../context/api.js';
 import toast from 'react-hot-toast';
 
 export function InvoicesPage() {
@@ -121,7 +121,7 @@ export function InvoicesPage() {
               </span>
               <div className="flex items-center justify-end gap-2">
                 <a
-                  href={`/api/invoices/${inv._id}/pdf`}
+                  href={getApiUrl(`/invoices/${inv._id}/pdf`)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="p-1.5 bg-white border border-y2k-border hover:bg-y2k-yellow text-y2k-text transition-colors"

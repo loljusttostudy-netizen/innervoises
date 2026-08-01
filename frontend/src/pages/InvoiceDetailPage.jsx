@@ -8,7 +8,7 @@ import { Select } from '../components/ui/Select.jsx';
 import { Modal } from '../components/ui/Modal.jsx';
 import { formatCurrency } from '../utils/formatNumber.js';
 import { ArrowLeft, Download, Printer, DollarSign } from 'lucide-react';
-import api from '../context/api.js';
+import api, { getApiUrl } from '../context/api.js';
 import toast from 'react-hot-toast';
 
 export function InvoiceDetailPage() {
@@ -88,7 +88,7 @@ export function InvoiceDetailPage() {
           )}
 
           <a
-            href={`/api/invoices/${invoice._id}/html?format=${selectedFormat}`}
+            href={getApiUrl(`/invoices/${invoice._id}/html?format=${selectedFormat}`)}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-2 px-4 py-2 bg-y2k-surface text-y2k-text font-bold text-xs border border-y2k-border rounded-lg shadow-y2k-sm hover:bg-y2k-bg transition-all"
@@ -97,7 +97,7 @@ export function InvoiceDetailPage() {
           </a>
 
           <a
-            href={`/api/invoices/${invoice._id}/pdf?format=${selectedFormat}`}
+            href={getApiUrl(`/invoices/${invoice._id}/pdf?format=${selectedFormat}`)}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-2 px-4 py-2 bg-y2k-text text-y2k-bg font-bold text-xs border border-y2k-border rounded-lg shadow-y2k-sm hover:opacity-90 transition-all"
@@ -160,7 +160,7 @@ export function InvoiceDetailPage() {
       {/* Interactive Invoice Document Preview Sheet */}
       <Card className="!p-0 overflow-hidden min-h-[850px] bg-white rounded-2xl shadow-y2k-lg">
         <iframe
-          src={`/api/invoices/${invoice._id}/html?format=${selectedFormat}`}
+          src={getApiUrl(`/invoices/${invoice._id}/html?format=${selectedFormat}`)}
           title={`Invoice ${invoice.invoiceNo}`}
           className="w-full min-h-[850px] border-none bg-white"
         />
