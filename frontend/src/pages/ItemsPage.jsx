@@ -63,8 +63,8 @@ export function ItemsPage() {
   };
 
   const handleSave = async () => {
-    if (!form.name || form.rate === '') {
-      toast.error('Item name and rate are required');
+    if (!form.name || form.rate === '' || Number(form.rate) <= 0) {
+      toast.error('Item name is required and rate must be greater than 0');
       return;
     }
 

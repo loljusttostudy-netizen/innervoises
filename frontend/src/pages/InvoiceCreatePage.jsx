@@ -436,6 +436,8 @@ export function InvoiceCreatePage() {
 
                 <Input
                   type="number"
+                  min="0.00001"
+                  step="any"
                   value={r.qty}
                   onChange={(e) => handleRowChange(i, 'qty', e.target.value)}
                   placeholder="Qty"
@@ -449,6 +451,7 @@ export function InvoiceCreatePage() {
 
                 <Input
                   type="number"
+                  min="0.00001"
                   step="0.00001"
                   value={r.rate}
                   onChange={(e) => handleRowChange(i, 'rate', e.target.value)}

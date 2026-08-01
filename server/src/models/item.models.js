@@ -24,6 +24,7 @@ const itemSchema = new Schema({
     rate: {
         type: Number,
         required: true,
+        min: [0.00001, "Rate must be greater than 0"],
         default: 0
     },
     gst: {

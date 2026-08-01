@@ -11,8 +11,8 @@ const DEFAULT_UNITS = [
 
 const createItem = asyncHandler(async (req, res) => {
     const { name, category, hsn, unit, rate, gst, rateDecimalPlaces } = req.body;
-    if (!name || rate === undefined) {
-        throw new ApiError(400, "Item name and rate are required");
+    if (!name || rate === undefined || rate === null || Number(rate) <= 0) {
+        throw new ApiError(400, "Item name is required and rate must be greater than 0");
     }
 
     const item = await Item.create({
@@ -84,6 +84,10 @@ const getDistinctUnits = asyncHandler(async (req, res) => {
 const updateItem = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const { name, category, hsn, unit, rate, gst, rateDecimalPlaces } = req.body;
+
+    if (rate !== undefined && (rate === null || Number(rate) <= 0)) {
+        throw new ApiError(400, "Item rate must be greater than 0");
+    }
 
     const item = await Item.findOneAndUpdate(
         { _id: id, createdBy: req.user._id },

@@ -20,6 +20,7 @@ const invoiceItemSchema = new Schema({
     qty: {
         type: Number,
         required: true,
+        min: [0.00001, "Quantity must be greater than 0"],
         default: 1
     },
     unit: {
@@ -29,6 +30,7 @@ const invoiceItemSchema = new Schema({
     rate: {
         type: Number,
         required: true,
+        min: [0.00001, "Rate must be greater than 0"],
         default: 0
     },
     gst: {

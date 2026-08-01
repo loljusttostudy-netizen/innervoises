@@ -138,6 +138,17 @@ const createInvoice = asyncHandler(async (req, res) => {
     let subtotal = 0;
     let totalGstAmount = 0;
 
+    for (const r of items) {
+        const q = Number(r.qty || 0);
+        const rt = Number(r.rate || 0);
+        if (q <= 0) {
+            throw new ApiError(400, `Quantity for "${r.name || 'item'}" must be greater than 0`);
+        }
+        if (rt <= 0) {
+            throw new ApiError(400, `Rate for "${r.name || 'item'}" must be greater than 0`);
+        }
+    }
+
     const processedItems = await Promise.all(items.map(async (r) => {
         let targetItemId = r.itemId || null;
 
@@ -292,6 +303,17 @@ const updateInvoice = asyncHandler(async (req, res) => {
 
     if (invoice.status === "cancelled") {
         throw new ApiError(400, "Cannot update a cancelled invoice");
+    }
+
+    if (req.body.items && Array.isArray(req.body.items)) {
+        for (const r of req.body.items) {
+            if (r.qty !== undefined && Number(r.qty) <= 0) {
+                throw new ApiError(400, `Quantity for "${r.name || 'item'}" must be greater than 0`);
+            }
+            if (r.rate !== undefined && Number(r.rate) <= 0) {
+                throw new ApiError(400, `Rate for "${r.name || 'item'}" must be greater than 0`);
+            }
+        }
     }
 
     const updated = await Invoice.findOneAndUpdate(
