@@ -102,22 +102,22 @@
         .items-table {
             width: 100%;
             border-collapse: collapse;
+            table-layout: fixed;
             margin-bottom: 10px;
+        }
+
+        .items-table th,
+        .items-table td {
+            padding: 6px 6px;
+            font-size: 10.5px;
+            vertical-align: top;
         }
 
         .items-table th {
             border-top: 1.5px solid #000;
             border-bottom: 1.5px solid #000;
-            padding: 6px 4px;
-            text-align: left;
             font-weight: bold;
-            font-size: 10.5px;
-        }
-
-        .items-table td {
-            padding: 6px 4px;
-            font-size: 10.5px;
-            vertical-align: top;
+            background-color: #f7f7fa;
         }
 
         .items-table tr.item-row td {
@@ -130,8 +130,8 @@
             font-weight: bold;
         }
 
-        .text-right { text-align: right; }
-        .text-center { text-align: center; }
+        .text-right { text-align: right !important; white-space: nowrap; }
+        .text-center { text-align: center !important; }
 
         .footer-section {
             display: flex;
@@ -272,6 +272,12 @@
             <td></td>
         </tr>
         {{/if}}
+        {{#each customFields}}
+        <tr>
+            <td><strong>{{label}} :</strong> {{value}}</td>
+            <td></td>
+        </tr>
+        {{/each}}
     </table>
 
     <!-- ADDRESSES -->
@@ -290,15 +296,24 @@
 
     <!-- ITEMS TABLE -->
     <table class="items-table">
+        <colgroup>
+            <col style="width: 4%;">
+            <col style="width: 35%;">
+            <col style="width: 10%;">
+            <col style="width: 9%;">
+            <col style="width: 7%;">
+            <col style="width: 16%;">
+            <col style="width: 19%;">
+        </colgroup>
         <thead>
             <tr>
-                <th style="width: 5%;" class="text-center">#</th>
-                <th style="width: 32%;">Item Description</th>
-                <th style="width: 12%;" class="text-center">HSN/SAC</th>
-                <th style="width: 13%;" class="text-right">Qty</th>
-                <th style="width: 8%;" class="text-center">Unit</th>
-                <th style="width: 13%;" class="text-right">Rate</th>
-                <th style="width: 17%;" class="text-right">Amount</th>
+                <th class="text-center">#</th>
+                <th>Item Description</th>
+                <th class="text-center">HSN/SAC</th>
+                <th class="text-right">Qty</th>
+                <th class="text-center">Unit</th>
+                <th class="text-right">Rate (₹)</th>
+                <th class="text-right">Amount (₹)</th>
             </tr>
         </thead>
         <tbody>

@@ -115,9 +115,6 @@ export function InvoiceDetailPage() {
             <Pill tone={invoice.status === 'paid' ? 'green' : invoice.status === 'partial' ? 'amber' : 'red'}>
               {invoice.status.toUpperCase()}
             </Pill>
-            <Pill tone={invoice.saleType === 'cash' ? 'green' : 'amber'}>
-              {invoice.saleType === 'cash' ? 'CASH SALE' : 'CREDIT SALE'}
-            </Pill>
           </div>
           <p className="text-xs text-y2k-muted font-medium mt-1">
             Issued on {invoice.date} · Factory: {invoice.factory?.name} ({invoice.factory?.state})

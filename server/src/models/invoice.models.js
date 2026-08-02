@@ -126,6 +126,14 @@ const invoiceSchema = new Schema({
     cpNo: { type: String, default: "" },
     cpDate: { type: String, default: "" },
 
+    // Dynamic Custom Logistics Fields
+    customFields: [
+        {
+            label: { type: String, trim: true, default: "" },
+            value: { type: String, trim: true, default: "" }
+        }
+    ],
+
     status: {
         type: String,
         enum: ["draft", "generated", "paid", "partial", "cancelled"],

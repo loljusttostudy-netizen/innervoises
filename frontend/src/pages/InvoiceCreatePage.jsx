@@ -37,6 +37,21 @@ export function InvoiceCreatePage() {
     vehicleNo: '', transportName: '', memoNo: '', eWayBillNo: '', noOfCases: '',
     soNo: '', soDate: '', contractNoGEMC: '', cpNo: '', cpDate: ''
   });
+  const [customFields, setCustomFields] = useState([]);
+
+  const addCustomField = () => {
+    setCustomFields([...customFields, { label: '', value: '' }]);
+  };
+
+  const removeCustomField = (idx) => {
+    setCustomFields(customFields.filter((_, i) => i !== idx));
+  };
+
+  const updateCustomField = (idx, field, val) => {
+    const next = [...customFields];
+    next[idx][field] = val;
+    setCustomFields(next);
+  };
 
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -101,6 +116,17 @@ export function InvoiceCreatePage() {
       cpNo: party.cpNo || '',
       cpDate: party.cpDate || ''
     });
+
+    if (party.customFields && party.customFields.length > 0) {
+      setCustomFields(party.customFields.map(f => ({ label: f.label || '', value: '' })));
+    } else {
+      try {
+        const savedLabels = JSON.parse(localStorage.getItem('saved_logistics_custom_labels') || '[]');
+        if (savedLabels.length > 0) {
+          setCustomFields(savedLabels.map(label => ({ label, value: '' })));
+        }
+      } catch (e) {}
+    }
   };
 
   const currentFactory = factories.find(f => f._id === factoryId) || factories[0];
@@ -269,10 +295,22 @@ export function InvoiceCreatePage() {
           gst: l.gst,
           amount: l.amount
         })),
-        ...extra
+        ...extra,
+        customFields: customFields.filter(cf => cf.label.trim() !== '')
       };
 
       const res = await api.post('/invoices', payload);
+
+      // Remember custom field labels for future invoices
+      const activeLabels = customFields.map(cf => cf.label.trim()).filter(Boolean);
+      if (activeLabels.length > 0) {
+        try {
+          const existing = JSON.parse(localStorage.getItem('saved_logistics_custom_labels') || '[]');
+          const combined = Array.from(new Set([...existing, ...activeLabels]));
+          localStorage.setItem('saved_logistics_custom_labels', JSON.stringify(combined));
+        } catch (e) {}
+      }
+
       toast.success('Invoice created successfully!');
       navigate(`/invoices/${res.data.data._id}`);
     } catch (err) {
@@ -333,29 +371,6 @@ export function InvoiceCreatePage() {
             options={factories.map(f => ({ label: `${f.name} (${f.state})`, value: f._id }))}
           />
         </Field>
-
-        <Field label="Sale Type (Debit / Credit)">
-          <div className="flex gap-1 p-1 bg-y2k-bg border-2 border-y2k-border">
-            <button
-              type="button"
-              onClick={() => setSaleType('credit')}
-              className={`flex-1 py-1.5 text-xs font-bold transition-all ${
-                saleType === 'credit' ? 'bg-y2k-red text-y2k-redDark border border-y2k-redDark' : 'text-y2k-text'
-              }`}
-            >
-              Credit (Udhar)
-            </button>
-            <button
-              type="button"
-              onClick={() => setSaleType('cash')}
-              className={`flex-1 py-1.5 text-xs font-bold transition-all ${
-                saleType === 'cash' ? 'bg-y2k-green text-y2k-greenDark border border-y2k-greenDark' : 'text-y2k-text'
-              }`}
-            >
-              Cash (Naqd)
-            </button>
-          </div>
-        </Field>
       </Card>
 
       {/* Buyer & Place of Supply */}
@@ -401,10 +416,11 @@ export function InvoiceCreatePage() {
 
       {/* Items Table */}
       <Card className="!p-0 overflow-hidden">
-        <div className="grid grid-cols-[2.5fr_1fr_0.8fr_1fr_1fr_0.8fr_1.2fr_40px] gap-2 px-5 py-3 text-[11px] font-bold uppercase tracking-wider text-y2k-muted border-b-2 border-y2k-border bg-y2k-bg/50">
+        {/* Desktop Header */}
+        <div className="hidden md:grid grid-cols-[2.5fr_1fr_0.8fr_1fr_1fr_0.8fr_1.2fr_40px] gap-2 px-5 py-3 text-[11px] font-bold uppercase tracking-wider text-y2k-muted border-b-2 border-y2k-border bg-y2k-bg/50">
           <span>Item & Description</span>
           <span>HSN</span>
-          <span>Qty</span>
+          <span className="text-right">Qty</span>
           <span>Unit</span>
           <span className="text-right">Rate (₹)</span>
           <span className="text-center">GST%</span>
@@ -415,8 +431,9 @@ export function InvoiceCreatePage() {
         {rows.map((r, i) => {
           const amt = (Number(r.qty) || 0) * (Number(r.rate) || 0);
           return (
-            <div key={r.id} className="p-3 border-b-2 border-y2k-border last:border-none space-y-2">
-              <div className="grid grid-cols-[2.5fr_1fr_0.8fr_1fr_1fr_0.8fr_1.2fr_40px] gap-2 items-center text-xs">
+            <div key={r.id} className="p-3 sm:p-4 border-b-2 border-y2k-border last:border-none space-y-2">
+              {/* Desktop Row Grid */}
+              <div className="hidden md:grid grid-cols-[2.5fr_1fr_0.8fr_1fr_1fr_0.8fr_1.2fr_40px] gap-2 items-center text-xs">
                 <AutocompleteInput
                   value={r.name}
                   onChange={(val) => handleRowChange(i, 'name', val)}
@@ -472,10 +489,98 @@ export function InvoiceCreatePage() {
                 <button
                   type="button"
                   onClick={() => removeRow(i)}
-                  className="p-1.5 bg-y2k-red/40 hover:bg-y2k-red border border-y2k-redDark text-y2k-redDark transition-colors ml-auto"
+                  className="p-1.5 bg-y2k-red/40 hover:bg-y2k-red border border-y2k-redDark text-y2k-redDark transition-colors ml-auto rounded"
                 >
                   <X size={14} />
                 </button>
+              </div>
+
+              {/* Mobile Item Card Layout */}
+              <div className="md:hidden space-y-3 bg-y2k-bg/20 p-3 border border-y2k-border rounded-lg">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-[11px] font-bold text-y2k-muted uppercase">Item #{i + 1}</span>
+                  {rows.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeRow(i)}
+                      className="px-2 py-1 bg-y2k-red/30 text-y2k-redDark border border-y2k-redDark text-[11px] font-bold rounded flex items-center gap-1"
+                    >
+                      <X size={13} /> Delete
+                    </button>
+                  )}
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-bold text-y2k-muted uppercase block mb-1">Item Name</label>
+                  <AutocompleteInput
+                    value={r.name}
+                    onChange={(val) => handleRowChange(i, 'name', val)}
+                    onSelect={(item) => handleSelectItemForRow(i, item)}
+                    fetchSuggestions={async (q) => {
+                      const res = await api.get(`/items/search?q=${encodeURIComponent(q)}`);
+                      return res.data.data;
+                    }}
+                    placeholder="Search or enter item..."
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-[10px] font-bold text-y2k-muted uppercase block mb-1">HSN Code</label>
+                    <Input
+                      value={r.hsn}
+                      onChange={(e) => handleRowChange(i, 'hsn', e.target.value)}
+                      placeholder="HSN"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-y2k-muted uppercase block mb-1">GST Slab</label>
+                    <Select
+                      value={r.gst}
+                      onChange={(e) => handleRowChange(i, 'gst', e.target.value)}
+                      options={GST_SLABS.map(g => ({ label: `${g}% GST`, value: g }))}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2">
+                  <div>
+                    <label className="text-[10px] font-bold text-y2k-muted uppercase block mb-1">Qty</label>
+                    <Input
+                      type="number"
+                      min="0.00001"
+                      step="any"
+                      value={r.qty}
+                      onChange={(e) => handleRowChange(i, 'qty', e.target.value)}
+                      placeholder="1"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-y2k-muted uppercase block mb-1">Unit</label>
+                    <Input
+                      value={r.unit}
+                      onChange={(e) => handleRowChange(i, 'unit', e.target.value)}
+                      placeholder="NOS"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-y2k-muted uppercase block mb-1">Rate (₹)</label>
+                    <Input
+                      type="number"
+                      min="0.00001"
+                      step="0.00001"
+                      value={r.rate}
+                      onChange={(e) => handleRowChange(i, 'rate', e.target.value)}
+                      placeholder="Rate"
+                      className="font-mono text-right"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-2 border-t border-y2k-border/50 text-xs">
+                  <span className="font-bold text-y2k-muted">Item Amount:</span>
+                  <span className="font-black font-mono text-y2k-text text-sm">{formatCurrency(amt)}</span>
+                </div>
               </div>
 
               {/* Rate Anomaly Warning Banner */}
@@ -508,32 +613,72 @@ export function InvoiceCreatePage() {
         <button
           type="button"
           onClick={() => setMoreOpen(!moreOpen)}
-          className="flex items-center justify-between w-full text-xs font-bold text-y2k-text uppercase tracking-wider"
+          className="flex items-center justify-between w-full text-xs font-bold text-y2k-text uppercase tracking-wider py-1 px-2 -mx-2 rounded-lg hover:bg-y2k-bg/60 active:bg-y2k-bg transition-colors cursor-pointer"
         >
           <span>Logistics & Reference Details (Vehicle, Transport, eWay, GEMC)</span>
           <ChevronDown size={16} className={`transition-transform ${moreOpen ? 'rotate-180' : ''}`} />
         </button>
 
         {moreOpen && (
-          <div className="grid md:grid-cols-3 gap-4 pt-2 border-t-2 border-y2k-border">
-            <Field label="Vehicle No.">
-              <Input value={extra.vehicleNo} onChange={(e) => setExtra({ ...extra, vehicleNo: e.target.value })} placeholder="e.g. DL1LAR9143" />
-            </Field>
-            <Field label="Transport Name">
-              <Input value={extra.transportName} onChange={(e) => setExtra({ ...extra, transportName: e.target.value })} placeholder="e.g. Indian Tempo Service" />
-            </Field>
-            <Field label="e-Way Bill No.">
-              <Input value={extra.eWayBillNo} onChange={(e) => setExtra({ ...extra, eWayBillNo: e.target.value })} placeholder="e.g. 123456789012" />
-            </Field>
-            <Field label="No. of Cases / Bundles">
-              <Input value={extra.noOfCases} onChange={(e) => setExtra({ ...extra, noOfCases: e.target.value })} placeholder="e.g. 4 BUNDLES" />
-            </Field>
-            <Field label="Memo No.">
-              <Input value={extra.memoNo} onChange={(e) => setExtra({ ...extra, memoNo: e.target.value })} />
-            </Field>
-            <Field label="GEMC Contract No.">
-              <Input value={extra.contractNoGEMC} onChange={(e) => setExtra({ ...extra, contractNoGEMC: e.target.value })} />
-            </Field>
+          <div className="space-y-4 pt-2 border-t-2 border-y2k-border">
+            <div className="grid md:grid-cols-3 gap-4">
+              <Field label="Vehicle No.">
+                <Input value={extra.vehicleNo} onChange={(e) => setExtra({ ...extra, vehicleNo: e.target.value })} placeholder="e.g. DL1LAR9143" />
+              </Field>
+              <Field label="Transport Name">
+                <Input value={extra.transportName} onChange={(e) => setExtra({ ...extra, transportName: e.target.value })} placeholder="e.g. Indian Tempo Service" />
+              </Field>
+              <Field label="e-Way Bill No.">
+                <Input value={extra.eWayBillNo} onChange={(e) => setExtra({ ...extra, eWayBillNo: e.target.value })} placeholder="e.g. 123456789012" />
+              </Field>
+              <Field label="No. of Cases / Bundles">
+                <Input value={extra.noOfCases} onChange={(e) => setExtra({ ...extra, noOfCases: e.target.value })} placeholder="e.g. 4 BUNDLES" />
+              </Field>
+              <Field label="Memo No.">
+                <Input value={extra.memoNo} onChange={(e) => setExtra({ ...extra, memoNo: e.target.value })} />
+              </Field>
+              <Field label="GEMC Contract No.">
+                <Input value={extra.contractNoGEMC} onChange={(e) => setExtra({ ...extra, contractNoGEMC: e.target.value })} />
+              </Field>
+            </div>
+
+            {/* Custom Dynamic Fields */}
+            {customFields.length > 0 && (
+              <div className="space-y-2 pt-2 border-t border-y2k-border/50">
+                <p className="text-[11px] font-bold text-y2k-muted uppercase tracking-wider">Custom Logistics Fields</p>
+                {customFields.map((cf, idx) => (
+                  <div key={idx} className="flex items-center gap-2">
+                    <Input
+                      value={cf.label}
+                      onChange={(e) => updateCustomField(idx, 'label', e.target.value)}
+                      placeholder="Field Name (e.g. Driver Phone)"
+                      className="w-1/3 text-xs"
+                    />
+                    <Input
+                      value={cf.value}
+                      onChange={(e) => updateCustomField(idx, 'value', e.target.value)}
+                      placeholder="Field Value (e.g. +91 9876543210)"
+                      className="flex-1 text-xs"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeCustomField(idx)}
+                      className="p-2 bg-y2k-red/30 hover:bg-y2k-red text-y2k-redDark border border-y2k-redDark transition-colors"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={addCustomField}
+              className="px-3 py-1.5 bg-y2k-bg text-y2k-text text-xs font-bold border-2 border-y2k-border flex items-center gap-1.5 hover:bg-y2k-bg/80 transition-colors"
+            >
+              <Plus size={14} /> Add Custom Logistics Field
+            </button>
           </div>
         )}
       </Card>

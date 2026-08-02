@@ -77,16 +77,16 @@ const DEFAULT_CANVA_TEMPLATE = `
   </div>
 
   <!-- ITEMS TABLE -->
-  <table style="width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 10.5px;">
+  <table style="width: 100%; border-collapse: collapse; table-layout: fixed; margin-bottom: 12px; font-size: 10.5px;">
     <thead>
       <tr style="border-top: 1.5px solid #2d241b; border-bottom: 1.5px solid #2d241b; background-color: #f7f7fc;">
-        <th style="padding: 6px 4px; text-align: center; font-weight: bold; width: 5%;">#</th>
-        <th style="padding: 6px 4px; text-align: left; font-weight: bold; width: 32%;">Item Description</th>
-        <th style="padding: 6px 4px; text-align: center; font-weight: bold; width: 12%;">HSN/SAC</th>
-        <th style="padding: 6px 4px; text-align: right; font-weight: bold; width: 13%;">Qty</th>
-        <th style="padding: 6px 4px; text-align: center; font-weight: bold; width: 8%;">Unit</th>
-        <th style="padding: 6px 4px; text-align: right; font-weight: bold; width: 13%;">Rate (₹)</th>
-        <th style="padding: 6px 4px; text-align: right; font-weight: bold; width: 17%;">Amount (₹)</th>
+        <th style="padding: 6px 4px; text-align: center; font-weight: bold; width: 4%;">#</th>
+        <th style="padding: 6px 4px; text-align: left; font-weight: bold; width: 35%;">Item Description</th>
+        <th style="padding: 6px 4px; text-align: center; font-weight: bold; width: 10%;">HSN/SAC</th>
+        <th style="padding: 6px 4px; text-align: right; font-weight: bold; width: 9%;">Qty</th>
+        <th style="padding: 6px 4px; text-align: center; font-weight: bold; width: 7%;">Unit</th>
+        <th style="padding: 6px 4px; text-align: right; font-weight: bold; width: 16%;">Rate (₹)</th>
+        <th style="padding: 6px 4px; text-align: right; font-weight: bold; width: 19%;">Amount (₹)</th>
       </tr>
     </thead>
     <tbody>
@@ -105,8 +105,8 @@ const DEFAULT_CANVA_TEMPLATE = `
         <td colspan="3" style="padding: 6px 4px;"><strong>SubTotal</strong></td>
         <td style="padding: 6px 4px; text-align: right;"><strong>{{totalQtyFormatted}}</strong></td>
         <td></td>
-        <td style="padding: 6px 4px; text-align: right;"><strong>₹{{totalRateFormatted}}</strong></td>
-        <td style="padding: 6px 4px; text-align: right;"><strong>₹{{subtotalFormatted}}</strong></td>
+        <td style="padding: 6px 4px; text-align: right; white-space: nowrap;"><strong>₹{{totalRateFormatted}}</strong></td>
+        <td style="padding: 6px 4px; text-align: right; white-space: nowrap;"><strong>₹{{subtotalFormatted}}</strong></td>
       </tr>
     </tbody>
   </table>

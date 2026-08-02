@@ -67,6 +67,12 @@ const partySchema = new Schema({
     cpDate: { type: String, default: "" },
     memoNo: { type: String, default: "" },
     memoDate: { type: String, default: "" },
+    customFields: [
+        {
+            label: { type: String, trim: true, default: "" },
+            value: { type: String, trim: true, default: "" }
+        }
+    ],
     // Banking
     bankName: { type: String, default: "" },
     accountNo: { type: String, default: "" },

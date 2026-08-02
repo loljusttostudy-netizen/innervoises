@@ -114,7 +114,8 @@ const createInvoice = asyncHandler(async (req, res) => {
         invoiceNo, date, factoryId, partyId, placeOfSupply,
         saleType = "credit", items,
         vehicleNo, transportName, noOfCases, eWayBillNo,
-        memoNo, memoDate, soNo, soDate, contractNoGEMC, cpNo, cpDate
+        memoNo, memoDate, soNo, soDate, contractNoGEMC, cpNo, cpDate,
+        customFields = []
     } = req.body;
 
     if (!invoiceNo || !date || !factoryId || !partyId || !items || items.length === 0) {
@@ -241,10 +242,21 @@ const createInvoice = asyncHandler(async (req, res) => {
         contractNoGEMC: contractNoGEMC || party.contractNoGEMC || "",
         cpNo: cpNo || party.cpNo || "",
         cpDate: cpDate || party.cpDate || "",
+        customFields: Array.isArray(customFields) ? customFields.filter(f => f.label && f.label.trim()) : [],
         status,
         templateId: profile?.templateId || "classic",
         createdBy: req.user._id
     });
+
+    // Save custom fields on Party so they are remembered for future invoices
+    if (Array.isArray(customFields) && customFields.length > 0) {
+        const validCustomFields = customFields.filter(f => f.label && f.label.trim());
+        if (validCustomFields.length > 0) {
+            await Party.findByIdAndUpdate(party._id, {
+                $set: { customFields: validCustomFields.map(f => ({ label: f.label.trim(), value: '' })) }
+            });
+        }
+    }
 
     // Update Counter for auto-numbering
     const parsed = parseInvoiceNo(invoiceNo);

@@ -123,6 +123,11 @@ export function compileInvoiceHtml(invoice, profile, format = 'a4') {
             shippingAddress: cleanField(invoice.party?.shippingAddress)
         },
 
+        customFields: (invoice.customFields || []).map(cf => ({
+            label: cleanField(cf.label),
+            value: cleanField(cf.value)
+        })).filter(cf => cf.label),
+
         items: itemsFormatted,
         totalQtyFormatted: formatNum(totalQty, qtyDecimals),
         totalRateFormatted: formatNum(totalRate, rateDecimals),
@@ -189,6 +194,18 @@ export function compileInvoiceHtml(invoice, profile, format = 'a4') {
             row = row.replace(/\{\{gst\}\}/g, item.gst || 18);
             row = row.replace(/\{\{amountFormatted\}\}/g, item.amountFormatted);
             return row;
+        }).join('');
+    });
+
+    // Custom Fields Loop
+    const customFieldsRegex = /\{\{#each customFields\}\}([\s\S]*?)\{\{\/each\}\}/g;
+    html = html.replace(customFieldsRegex, (_, inner) => {
+        if (!data.customFields || data.customFields.length === 0) return '';
+        return data.customFields.map(cf => {
+            let itemStr = inner;
+            itemStr = itemStr.replace(/\{\{label\}\}/g, cf.label || '');
+            itemStr = itemStr.replace(/\{\{value\}\}/g, cf.value || '');
+            return itemStr;
         }).join('');
     });
 

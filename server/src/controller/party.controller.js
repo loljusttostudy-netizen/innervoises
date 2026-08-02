@@ -58,7 +58,7 @@ const searchParties = asyncHandler(async (req, res) => {
     const query = q.trim();
 
     if (!query) {
-        const topParties = await Party.find({ createdBy: req.user._id }).limit(10).select("name gstin state billingAddress shippingAddress");
+        const topParties = await Party.find({ createdBy: req.user._id }).limit(10);
         return res.status(200).json(new ApiResponse(200, topParties, "Top parties"));
     }
 
@@ -68,7 +68,7 @@ const searchParties = asyncHandler(async (req, res) => {
             { name: { $regex: query, $options: "i" } },
             { gstin: { $regex: query, $options: "i" } }
         ]
-    }).limit(10).select("name gstin state billingAddress shippingAddress");
+    }).limit(10);
 
     return res.status(200).json(
         new ApiResponse(200, parties, "Parties autocomplete suggestions")

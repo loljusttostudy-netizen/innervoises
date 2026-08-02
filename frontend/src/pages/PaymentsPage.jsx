@@ -95,7 +95,8 @@ export function PaymentsPage() {
       </div>
 
       <Card className="!p-0 overflow-hidden">
-        <div className="grid grid-cols-[1fr_1.5fr_1fr_1fr_1fr_60px] gap-3 px-5 py-3 text-[11px] font-bold uppercase tracking-wider text-y2k-muted border-b-2 border-y2k-border bg-y2k-bg/50">
+        {/* Desktop Header */}
+        <div className="hidden md:grid grid-cols-[1fr_1.5fr_1fr_1fr_1fr_60px] gap-3 px-5 py-3 text-[11px] font-bold uppercase tracking-wider text-y2k-muted border-b-2 border-y2k-border bg-y2k-bg/50">
           <span>Date</span>
           <span>Party</span>
           <span>Mode</span>
@@ -108,26 +109,47 @@ export function PaymentsPage() {
           <div className="p-12 text-center text-xs font-semibold text-y2k-muted">No payment records found</div>
         ) : (
           payments.map((p) => (
-            <div
-              key={p._id}
-              className="grid grid-cols-[1fr_1.5fr_1fr_1fr_1fr_60px] gap-3 px-5 py-4 text-xs items-center border-b-2 border-y2k-border last:border-none hover:bg-y2k-bg/40 transition-colors"
-            >
-              <span className="font-semibold text-y2k-muted">{p.date}</span>
-              <span className="font-bold text-y2k-text truncate">{p.party?.name || 'N/A'}</span>
-              <div>
-                <Pill tone="green">{p.mode.toUpperCase()}</Pill>
+            <React.Fragment key={p._id}>
+              {/* Desktop Row */}
+              <div className="hidden md:grid grid-cols-[1fr_1.5fr_1fr_1fr_1fr_60px] gap-3 px-5 py-4 text-xs items-center border-b-2 border-y2k-border last:border-none hover:bg-y2k-bg/40 transition-colors">
+                <span className="font-semibold text-y2k-muted">{p.date}</span>
+                <span className="font-bold text-y2k-text truncate">{p.party?.name || 'N/A'}</span>
+                <div>
+                  <Pill tone="green">{p.mode.toUpperCase()}</Pill>
+                </div>
+                <span className="font-mono text-y2k-muted truncate">{p.reference || '—'}</span>
+                <span className="text-right font-black text-y2k-greenDark font-mono text-sm">{formatCurrency(p.amount)}</span>
+                <div className="text-right">
+                  <button
+                    onClick={() => handleDelete(p._id)}
+                    className="p-1.5 bg-y2k-red/40 hover:bg-y2k-red border border-y2k-redDark text-y2k-redDark transition-colors ml-auto rounded"
+                    title="Delete payment record"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
               </div>
-              <span className="font-mono text-y2k-muted truncate">{p.reference || '—'}</span>
-              <span className="text-right font-black text-y2k-greenDark font-mono text-sm">{formatCurrency(p.amount)}</span>
-              <div className="text-right">
-                <button
-                  onClick={() => handleDelete(p._id)}
-                  className="p-1.5 bg-y2k-red/40 hover:bg-y2k-red border border-y2k-redDark text-y2k-redDark transition-colors ml-auto"
-                >
-                  <Trash2 size={14} />
-                </button>
+
+              {/* Mobile Card */}
+              <div className="md:hidden p-4 border-b-2 border-y2k-border last:border-none space-y-2 bg-white">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-xs text-y2k-text">{p.party?.name || 'N/A'}</span>
+                  <Pill tone="green">{p.mode.toUpperCase()}</Pill>
+                </div>
+                <div className="flex items-center justify-between text-xs pt-1">
+                  <span className="text-[11px] text-y2k-muted">{p.date} {p.reference ? `· Ref: ${p.reference}` : ''}</span>
+                  <span className="font-black text-y2k-greenDark font-mono">{formatCurrency(p.amount)}</span>
+                </div>
+                <div className="flex justify-end pt-1">
+                  <button
+                    onClick={() => handleDelete(p._id)}
+                    className="px-2 py-1 bg-y2k-red/30 hover:bg-y2k-red text-y2k-redDark border border-y2k-redDark transition-colors text-[11px] font-bold rounded flex items-center gap-1"
+                  >
+                    <Trash2 size={13} /> Delete
+                  </button>
+                </div>
               </div>
-            </div>
+            </React.Fragment>
           ))
         )}
       </Card>
