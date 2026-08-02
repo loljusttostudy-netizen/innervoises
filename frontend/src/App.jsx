@@ -28,7 +28,8 @@ export default function App() {
             <ProtectedRoute>
               <Layout>
                 <Routes>
-                  <Route path="/" element={<DashboardPage />} />
+                  <Route path="/" element={<Navigate to="/invoices/create" replace />} />
+                  <Route path="/dashboard" element={<DashboardPage />} />
                   <Route path="/invoices" element={<InvoicesPage />} />
                   <Route path="/invoices/create" element={<InvoiceCreatePage />} />
                   <Route path="/invoices/new" element={<Navigate to="/invoices/create" replace />} />
@@ -39,7 +40,7 @@ export default function App() {
                   <Route path="/factories" element={<FactoriesPage />} />
                   <Route path="/payments" element={<PaymentsPage />} />
                   <Route path="/settings" element={<SettingsPage />} />
-                  <Route path="*" element={<Navigate to="/" replace />} />
+                  <Route path="*" element={<Navigate to="/invoices/create" replace />} />
                 </Routes>
               </Layout>
             </ProtectedRoute>

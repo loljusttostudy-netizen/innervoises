@@ -23,8 +23,9 @@ export function Layout({ children, factories = [], activeFactoryId, onSelectFact
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const NAV_ITEMS = [
-    { to: '/', label: 'Dashboard', icon: LayoutDashboard },
-    { to: '/invoices', label: 'Invoices', icon: FileText },
+    { to: '/invoices/create', label: 'Create Invoice', icon: Plus },
+    { to: '/invoices', label: 'Invoices List', icon: FileText },
+    { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { to: '/parties', label: 'Parties / Buyers', icon: Users },
     { to: '/items', label: 'Items & Rates', icon: Package },
     { to: '/factories', label: 'Factory Units', icon: Factory },
@@ -48,7 +49,7 @@ export function Layout({ children, factories = [], activeFactoryId, onSelectFact
             </button>
 
             {/* Brand emblem */}
-            <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => navigate('/')}>
+            <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => navigate('/invoices/create')}>
               <div className="w-9 h-9 bg-y2k-text text-y2k-bg border border-y2k-border rounded-lg flex items-center justify-center font-bold">
                 <Sparkles size={20} />
               </div>
@@ -104,10 +105,10 @@ export function Layout({ children, factories = [], activeFactoryId, onSelectFact
 
       {/* Main Container */}
       <div className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 grid grid-cols-1 md:grid-cols-[220px_1fr] gap-6">
-        {/* Navigation Sidebar (Desktop + Mobile Drawer) */}
+        {/* Navigation Sidebar (Desktop Sticky + Mobile Drawer) */}
         <aside 
           className={`
-            fixed md:static inset-y-0 left-0 z-50 w-64 md:w-auto bg-y2k-surface md:bg-transparent p-4 md:p-0 border-r md:border-r-0 border-y2k-border shadow-y2k md:shadow-none transition-transform duration-200 ease-in-out md:translate-x-0
+            fixed md:sticky md:top-20 md:h-fit md:self-start inset-y-0 left-0 z-50 w-64 md:w-auto bg-y2k-surface md:bg-transparent p-4 md:p-0 border-r md:border-r-0 border-y2k-border shadow-y2k md:shadow-none transition-transform duration-200 ease-in-out md:translate-x-0
             ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
           `}
         >
